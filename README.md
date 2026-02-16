@@ -96,4 +96,6 @@ TravelHub ┣ frontend (React) ┣ backend (Spring Boot) ┗ database (SQL)
 
 🧑‍💻 Contributors
 
-Add your team members here.
+Frontend- Bishal Rajbanshi
+Backend - Pratik Humagain
+QA and other - Rejina Shrestha
