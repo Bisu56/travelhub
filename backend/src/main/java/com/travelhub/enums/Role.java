@@ -1,4 +1,4 @@
-package com.travelhub.entity;
+package com.travelhub.enums;
 
 public enum Role {
     USER,

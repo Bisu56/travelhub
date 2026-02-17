@@ -1,4 +1,5 @@
 package com.travelhub.entity;
+import com.travelhub.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
