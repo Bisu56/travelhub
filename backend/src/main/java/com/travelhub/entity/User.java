@@ -1,15 +1,16 @@
 package com.travelhub.entity;
+import com.travelhub.enums.AccountStatus;
 import com.travelhub.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
-
 @Entity
-@Data
-@Builder
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(name = "users")
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,7 +27,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    private boolean enabled; // email or phone verified check
+    @Enumerated(EnumType.STRING)
+    private AccountStatus status;
 
-    private String verificationCode; // OTP for email/phone
+    private boolean emailVerified;
+    private boolean phoneVerified;
 }
