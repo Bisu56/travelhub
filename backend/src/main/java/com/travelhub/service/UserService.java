@@ -1,4 +1,4 @@
-package com.travelhub.Service;
+package com.travelhub.service;
 import com.travelhub.entity.User;
 import com.travelhub.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

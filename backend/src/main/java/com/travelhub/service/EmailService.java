@@ -1,4 +1,4 @@
-package com.travelhub.Service;
+package com.travelhub.service;
 import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;

@@ -1,4 +1,4 @@
-package com.travelhub.Service;
+package com.travelhub.service;
 import com.travelhub.entity.User;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;

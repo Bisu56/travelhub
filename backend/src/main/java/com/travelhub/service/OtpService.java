@@ -1,4 +1,4 @@
-package com.travelhub.Service;
+package com.travelhub.service;
 import com.travelhub.entity.PhoneOtp;
 import com.travelhub.entity.User;
 import com.travelhub.entity.VerificationToken;

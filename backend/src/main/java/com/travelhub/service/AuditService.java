@@ -1,4 +1,4 @@
-package com.travelhub.Service;
+package com.travelhub.service;
 import com.travelhub.entity.AuditLog;
 import com.travelhub.repository.AuditLogRepository;
 import lombok.RequiredArgsConstructor;

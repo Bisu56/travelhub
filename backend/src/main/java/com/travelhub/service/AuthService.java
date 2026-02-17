@@ -1,4 +1,4 @@
-package com.travelhub.Service;
+package com.travelhub.service;
 import com.travelhub.Dtos.AuthResponse;
 import com.travelhub.entity.User;
 import com.travelhub.entity.enums.AccountStatus;
@@ -7,8 +7,6 @@ import com.travelhub.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
