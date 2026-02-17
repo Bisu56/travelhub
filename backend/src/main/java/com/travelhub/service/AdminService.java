@@ -1,4 +1,6 @@
 package com.travelhub.service;
+import com.travelhub.entity.AgentProfile;
+import com.travelhub.repository.AgentProfileRepository;
 import com.travelhub.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
