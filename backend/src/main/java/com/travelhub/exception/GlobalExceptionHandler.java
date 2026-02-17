@@ -1,64 +1,79 @@
 package com.travelhub.exception;
-
-import lombok.Data;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestControllerAdvice
+@ControllerAdvice
 public class GlobalExceptionHandler {
 
-    //  Handle Custom Resource Not Found
+    // Handle Resource Not Found
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex) {
-        ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value());
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    public ResponseEntity<Object> handleNotFound(ResourceNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    //  Handle Validation Errors (e.g., @Valid annotations)
+    // Handle Bad Request
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Object> handleBadRequest(BadRequestException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    // Handle Unauthorized
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<Object> handleUnauthorized(UnauthorizedException ex) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage());
+    }
+
+    // Handle Forbidden
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<Object> handleForbidden(ForbiddenException ex) {
+        return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
+    // Handle JWT Exceptions
+    @ExceptionHandler({ExpiredJwtException.class, SignatureException.class, MalformedJwtException.class})
+    public ResponseEntity<Object> handleJwtException(Exception ex) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, "Invalid or expired token");
+    }
+
+    // Handle Validation Errors
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
+    public ResponseEntity<Object> handleValidationErrors(MethodArgumentNotValidException ex) {
+        Map<String, Object> errors = new HashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(error ->
                 errors.put(error.getField(), error.getDefaultMessage())
         );
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        return buildResponse(HttpStatus.BAD_REQUEST, "Validation Failed", errors);
     }
 
-    //  Handle Bad Requests / Illegal Arguments
-    @ExceptionHandler({IllegalArgumentException.class, RuntimeException.class})
-    public ResponseEntity<ErrorResponse> handleBadRequest(RuntimeException ex) {
-        ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-    }
-
-    //  Catch-all for any other Exceptions
+    // Handle Generic Exception
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGlobal(Exception ex) {
-        ErrorResponse error = new ErrorResponse("An unexpected error occurred: " + ex.getMessage(),
-                HttpStatus.INTERNAL_SERVER_ERROR.value());
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<Object> handleGeneric(Exception ex) {
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
     }
-}
 
+    // Build standard JSON response
+    private ResponseEntity<Object> buildResponse(HttpStatus status, String message) {
+        return buildResponse(status, message, null);
+    }
 
- // Data Transfer Object for consistent error responses
-
-@Data
-class ErrorResponse {
-    private String message;
-    private int status;
-    private LocalDateTime timestamp;
-
-    public ErrorResponse(String message, int status) {
-        this.message = message;
-        this.status = status;
-        this.timestamp = LocalDateTime.now();
+    private ResponseEntity<Object> buildResponse(HttpStatus status, String message, Map<String, Object> details) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", Instant.now());
+        body.put("status", status.value());
+        body.put("error", status.getReasonPhrase());
+        body.put("message", message);
+        if (details != null && !details.isEmpty()) {
+            body.put("details", details);
+        }
+        return new ResponseEntity<>(body, status);
     }
 }
