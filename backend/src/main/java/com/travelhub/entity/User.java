@@ -3,8 +3,11 @@ import com.travelhub.entity.enums.AccountStatus;
 import com.travelhub.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.Instant;
+import org.springframework.stereotype.Component;
 
+import java.time.Instant;
+@Getter
+@Setter
 @Entity
 @Table(name = "users")
 @Data
@@ -21,6 +24,9 @@ public class User {
 
     @Column(unique = true, nullable = false)
     private String phone;
+
+    private String FirstName;
+    private String LastName;
 
     @Column(nullable = false)
     private String password;
