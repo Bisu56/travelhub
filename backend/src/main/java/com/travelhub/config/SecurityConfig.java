@@ -1,4 +1,5 @@
 package com.travelhub.config;
+import com.travelhub.Filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
