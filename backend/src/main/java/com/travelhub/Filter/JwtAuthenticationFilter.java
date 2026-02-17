@@ -16,7 +16,7 @@ import java.util.Collections;
 
 @Component
 @RequiredArgsConstructor
-public abstract class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
@@ -39,11 +39,11 @@ public abstract class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String email = jwtService.getEmailFromToken(token);
-        String role = jwtService.getRoleFromToken(token);
+        String email = jwtService.extractUsername(token);
+        String role = jwtService.extractRole(token);
 
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                email, null, Collections.singletonList(new SimpleGrantedAuthority(role))
+                email, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
         );
 
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
