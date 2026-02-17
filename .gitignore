@@ -1,3 +1,4 @@
+HEAD
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
@@ -31,3 +32,21 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# node
+node_modules/
+dist/
+build/
+
+# spring boot
+target/
+*.log
+*.class
+
+# system
+Thumbs.db
+.DS_Store
+.env
+.idea
+.vscode
+ c12ecc60fc41fb70bee1483d3d5d775aa0aa98d2
