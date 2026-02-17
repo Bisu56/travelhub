@@ -14,7 +14,6 @@ public class AdminService {
     private final UserRepository userRepository;
     private final AuditService auditLogService;
 
-    // Approve Agent
     public AgentProfile approveAgent(Long agentId) {
         AgentProfile agent = agentProfileRepository.findById(agentId)
                 .orElseThrow(() -> new RuntimeException("Agent not found"));
@@ -24,7 +23,6 @@ public class AdminService {
         return agent;
     }
 
-    // Reject Agent
     public AgentProfile rejectAgent(Long agentId) {
         AgentProfile agent = agentProfileRepository.findById(agentId)
                 .orElseThrow(() -> new RuntimeException("Agent not found"));
@@ -34,7 +32,6 @@ public class AdminService {
         return agent;
     }
 
-    // List pending agents
     public List<AgentProfile> listPendingAgents() {
         return agentProfileRepository.findByApprovalStatus(false);
     }

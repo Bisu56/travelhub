@@ -15,12 +15,10 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // Fetch user by ID
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
     }
 
-    // Update user profile
     public User updateProfile(Long userId, User updatedUser) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -66,7 +64,6 @@ public class UserService {
                 if(result) user.setPhoneVerified(true);
             }
 
-            // Auto-approve user if any verified field is completed
             if(user.getRole() == Role.USER) {
                 if((user.getEmail() != null && user.getEmailVerified()) ||
                         (user.getPhone() != null && user.getPhoneVerified())) {

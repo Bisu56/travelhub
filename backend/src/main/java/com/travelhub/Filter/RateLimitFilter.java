@@ -34,7 +34,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String ip = request.getRemoteAddr();
         Bucket bucket = resolveBucket(ip);
 
-        if (bucket.tryConsume(1)) {
+        if (bucket.tryConsume(2)) {
             filterChain.doFilter(request, response);
         } else {
             response.setStatus(429);

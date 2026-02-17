@@ -7,7 +7,6 @@ import com.travelhub.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -19,94 +18,132 @@ public class AuthService {
     private final AuditService auditService;
 
     public User registerUser(String email, String phone, String password) {
-        if(email != null && userRepository.existsByEmail(email))
-            throw new RuntimeException("Email already exists");
-        if(phone != null && userRepository.existsByPhone(phone))
-            throw new RuntimeException("Phone already exists");
-        if(email == null && phone == null)
+
+        if (email == null && phone == null)
             throw new RuntimeException("Either email or phone must be provided");
+
+        if (email != null && userRepository.existsByEmail(email))
+            throw new RuntimeException("Email already exists");
+
+        if (phone != null && userRepository.existsByPhone(phone))
+            throw new RuntimeException("Phone already exists");
 
         User user = User.builder()
                 .email(email)
                 .phone(phone)
                 .password(passwordEncoder.encode(password))
                 .role(Role.USER)
-                .accountStatus(AccountStatus.APPROVED)
-                .emailVerified(email == null ? false : false)
-                .phoneVerified(phone == null ? false : false)
+                .accountStatus(AccountStatus.PENDING) // MUST be pending
+                .emailVerified(false)
+                .phoneVerified(false)
                 .build();
 
-        User savedUser = userRepository.save(user);
+        User saved = userRepository.save(user);
         auditService.logAction(email != null ? email : phone, "USER_REGISTER");
-        return savedUser;
+        return saved;
     }
 
+
     public User registerAgent(String email, String phone, String password) {
-        if(email != null && userRepository.existsByEmail(email))
-            throw new RuntimeException("Email already exists");
-        if(phone != null && userRepository.existsByPhone(phone))
-            throw new RuntimeException("Phone already exists");
-        if(email == null && phone == null)
+
+        if (email == null && phone == null)
             throw new RuntimeException("Either email or phone must be provided");
+
+        if (email != null && userRepository.existsByEmail(email))
+            throw new RuntimeException("Email already exists");
+
+        if (phone != null && userRepository.existsByPhone(phone))
+            throw new RuntimeException("Phone already exists");
 
         User agent = User.builder()
                 .email(email)
                 .phone(phone)
                 .password(passwordEncoder.encode(password))
                 .role(Role.AGENT)
-                .accountStatus(AccountStatus.PENDING) // Pending admin approval
-                .emailVerified(email == null ? false : false)
-                .phoneVerified(phone == null ? false : false)
+                .accountStatus(AccountStatus.PENDING)
+                .emailVerified(false)
+                .phoneVerified(false)
                 .build();
 
-        User savedAgent = userRepository.save(agent);
+        User saved = userRepository.save(agent);
         auditService.logAction(email != null ? email : phone, "AGENT_REGISTER");
-        return savedAgent;
+        return saved;
     }
 
+
     public User registerAdmin(String email, String phone, String password) {
-        if(email != null && userRepository.existsByEmail(email))
-            throw new RuntimeException("Email already exists");
-        if(phone != null && userRepository.existsByPhone(phone))
-            throw new RuntimeException("Phone already exists");
-        if(email == null && phone == null)
+
+        if (email == null && phone == null)
             throw new RuntimeException("Either email or phone must be provided");
+
+        if (email != null && userRepository.existsByEmail(email))
+            throw new RuntimeException("Email already exists");
+
+        if (phone != null && userRepository.existsByPhone(phone))
+            throw new RuntimeException("Phone already exists");
 
         User admin = User.builder()
                 .email(email)
                 .phone(phone)
                 .password(passwordEncoder.encode(password))
                 .role(Role.ADMIN)
-                .accountStatus(AccountStatus.APPROVED)
-                .emailVerified(email == null ? false : false)
-                .phoneVerified(phone == null ? false : false)
+                .accountStatus(AccountStatus.APPROVED) // Admin auto-approved
+                .emailVerified(false)
+                .phoneVerified(false)
                 .build();
 
-        User savedAdmin = userRepository.save(admin);
+        User saved = userRepository.save(admin);
         auditService.logAction(email != null ? email : phone, "ADMIN_REGISTER");
-        return savedAdmin;
+        return saved;
+    }
+
+
+    public void activateUser(User user) {
+        user.setAccountStatus(AccountStatus.APPROVED);
+        userRepository.save(user);
     }
 
     public AuthResponse login(String emailOrPhone, String password) {
-        User user = (emailOrPhone.contains("@"))
-                ? userRepository.findByEmail(emailOrPhone)
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"))
-                : userRepository.findByPhone(emailOrPhone)
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+        if (emailOrPhone == null || emailOrPhone.isBlank())
+            throw new RuntimeException("Email or phone must be provided");
 
-        if(!passwordEncoder.matches(password, user.getPassword())) {
+        User user = emailOrPhone.contains("@")
+                ? userRepository.findByEmail(emailOrPhone).orElseThrow(() -> new RuntimeException("Invalid credentials"))
+                : userRepository.findByPhone(emailOrPhone).orElseThrow(() -> new RuntimeException("Invalid credentials"));
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             auditService.logAction(emailOrPhone, "LOGIN_FAILED");
             throw new RuntimeException("Invalid credentials");
         }
 
-        if(user.getAccountStatus() != AccountStatus.APPROVED) {
-            throw new RuntimeException("Account not approved yet");
-        }
+        boolean verified = Boolean.TRUE.equals(user.getEmailVerified())
+                || Boolean.TRUE.equals(user.getPhoneVerified());
+        if (!verified) throw new RuntimeException("Verify email or phone first");
+
+        if (user.getAccountStatus() != AccountStatus.APPROVED)
+            throw new RuntimeException("Account not approved");
 
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = refreshTokenService.createRefreshToken(user);
 
         auditService.logAction(emailOrPhone, "LOGIN_SUCCESS");
         return new AuthResponse(accessToken, refreshToken);
+
     }
-}
+        public boolean logout(String refreshToken) {
+            if (refreshToken == null || refreshToken.isEmpty()) {
+                throw new IllegalArgumentException("Refresh token is required for logout");
+            }
+
+            boolean exists = refreshTokenService.validateRefreshToken(refreshToken);
+            if (exists) {
+                refreshTokenService.revokeRefreshToken(refreshToken);
+                auditService.logAction("UNKNOWN_USER", "LOGOUT");
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+

@@ -7,11 +7,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class AuthRequest {
-
+public class RegisterRequest {
     @Email
-    @NotBlank
     private String email;
+
+    private String phone;
 
     @NotBlank
     @Size(min = 8)

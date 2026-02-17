@@ -10,34 +10,39 @@ import java.time.Instant;
 @Setter
 @Entity
 @Table(name = "users")
-@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String email;
+    @Column(unique = true)
+    private String email; // nullable allowed
 
-    @Column(unique = true, nullable = false)
-    private String phone;
+    @Column(unique = true)
+    private String phone; // nullable allowed
 
-    private String FirstName;
-    private String LastName;
+    private String firstName;
+    private String lastName;
 
     @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private AccountStatus accountStatus;
 
+    @Column(nullable = false)
     private Boolean emailVerified = false;
+
+    @Column(nullable = false)
     private Boolean phoneVerified = false;
 
     private Instant createdAt = Instant.now();
