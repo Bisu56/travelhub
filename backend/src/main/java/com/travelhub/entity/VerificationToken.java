@@ -1,27 +1,24 @@
 package com.travelhub.entity;
-
-
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.Instant;
-
 @Entity
-@Getter
-@Setter
+@Table(name = "verification_tokens")
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class VerificationToken {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String token;
 
-    private Instant expiryDate;
-
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
+
+    private Instant expiryDate;
 }

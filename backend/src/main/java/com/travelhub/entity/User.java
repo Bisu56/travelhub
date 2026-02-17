@@ -3,22 +3,23 @@ import com.travelhub.entity.enums.AccountStatus;
 import com.travelhub.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.Instant;
+
 @Entity
-@Getter @Setter
+@Table(name = "users")
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Table(name = "users")
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String phone;
 
     @Column(nullable = false)
@@ -28,8 +29,11 @@ public class User {
     private Role role;
 
     @Enumerated(EnumType.STRING)
-    private AccountStatus status;
+    private AccountStatus accountStatus;
 
-    private boolean emailVerified;
-    private boolean phoneVerified;
+    private Boolean emailVerified = false;
+    private Boolean phoneVerified = false;
+
+    private Instant createdAt = Instant.now();
+    private Instant updatedAt = Instant.now();
 }
