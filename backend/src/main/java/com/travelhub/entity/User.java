@@ -1,6 +1,6 @@
 package com.travelhub.entity;
-import com.travelhub.enums.AccountStatus;
-import com.travelhub.enums.Role;
+import com.travelhub.entity.enums.AccountStatus;
+import com.travelhub.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 @Entity
