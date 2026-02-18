@@ -3,9 +3,9 @@ import com.travelhub.entity.enums.AccountStatus;
 import com.travelhub.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+
 @Getter
 @Setter
 @Entity
@@ -20,10 +20,10 @@ public class User {
     private Long id;
 
     @Column(unique = true)
-    private String email; // nullable allowed
+    private String email;
 
     @Column(unique = true)
-    private String phone; // nullable allowed
+    private String phone;
 
     private String firstName;
     private String lastName;
@@ -45,6 +45,17 @@ public class User {
     @Column(nullable = false)
     private Boolean phoneVerified = false;
 
-    private Instant createdAt = Instant.now();
-    private Instant updatedAt = Instant.now();
+    private Instant createdAt;
+    private Instant updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = Instant.now();
+        updatedAt = Instant.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = Instant.now();
+    }
 }
