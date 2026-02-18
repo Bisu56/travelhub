@@ -16,7 +16,7 @@ import PermissionGuard from '../hoc/PermissionGuard';
 import AdminLayout from '../components/layout/AdminLayout';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import AgentApproval from '../pages/admin/AgentApproval';
-import Destinations from '../pages/admin/Destinations';
+import Destination from '../pages/admin/Destination';
 
 function AppRoutes() {
   return (
@@ -36,37 +36,31 @@ function AppRoutes() {
           {/* Add more public routes here if needed */}
         </Route>
 
-        {/* ── ADMIN ROUTES (protected + separate AdminLayout) ── */}
+        {/* ── ADMIN ROUTES (temporarily public) ── */}
         <Route
           path="/admin/dashboard"
           element={
-            <PermissionGuard allowedRole="ADMIN">
               <AdminLayout>
                 <AdminDashboard />
               </AdminLayout>
-            </PermissionGuard>
           }
         />
 
         <Route
           path="/admin/agents"
           element={
-            <PermissionGuard allowedRole="ADMIN">
               <AdminLayout>
                 <AgentApproval />
               </AdminLayout>
-            </PermissionGuard>
           }
         />
 
         <Route
           path="/admin/destinations"
           element={
-            <PermissionGuard allowedRole="ADMIN">
               <AdminLayout>
-                <Destinations />
+                <Destination />
               </AdminLayout>
-            </PermissionGuard>
           }
         />
 
