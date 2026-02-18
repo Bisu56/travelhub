@@ -1,10 +1,9 @@
-package com.travelhub.entity.enums;
+package com.travelhub.entity;
 
-import com.travelhub.entity.DestinationPackage;
-import com.travelhub.entity.User;
+import com.travelhub.entity.enums.BookingStatus;
+import com.travelhub.entity.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
