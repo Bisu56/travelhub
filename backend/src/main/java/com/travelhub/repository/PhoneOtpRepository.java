@@ -1,11 +1,10 @@
 package com.travelhub.repository;
-import com.travelhub.entity.PhoneOtp;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.Optional;
+import com.travelhub.entity.PhoneOtp;
 
-@Repository
 public interface PhoneOtpRepository extends JpaRepository<PhoneOtp, Long> {
-    Optional<PhoneOtp> findByPhone(String phone);
+
+    Optional<PhoneOtp> findTopByPhoneOrderByExpiryDateDesc(String phone);
 }
+

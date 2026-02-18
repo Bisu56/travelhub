@@ -22,9 +22,6 @@ public class AuthController {
     private final OtpService otpService;
     private final UserService userService;
 
-    private final Bucket emailOtpBucket;
-    private final Bucket phoneOtpBucket;
-
     @PostMapping("/register/user")
     public ResponseEntity<String> registerUser(@RequestBody @Valid RegisterRequest request) {
         User user = authService.registerUser(request.getEmail(), request.getPhone(), request.getPassword());
@@ -114,13 +111,8 @@ public class AuthController {
             case ADMIN -> user.setAccountStatus(AccountStatus.APPROVED);
         }
     }
-
     @PostMapping("/resend/email-otp")
     public ResponseEntity<String> resendEmailOtp(@RequestBody Map<String, String> request) {
-        if (!emailOtpBucket.tryConsume(3)) {
-            return ResponseEntity.status(429).body("Too many requests. Try again later.");
-        }
-
         String email = request.get("email");
         User user = userService.getUserByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -129,16 +121,16 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Email is already verified.");
         }
 
+        if (!otpService.tryConsumeEmailOtpBucket(user)) {
+            return ResponseEntity.status(429).body("Too many requests. Try again later.");
+        }
+
         otpService.sendEmailOtp(user);
         return ResponseEntity.ok("Email OTP resent successfully.");
     }
 
     @PostMapping("/resend/phone-otp")
     public ResponseEntity<String> resendPhoneOtp(@RequestBody Map<String, String> request) {
-        if (!phoneOtpBucket.tryConsume(3)) {
-            return ResponseEntity.status(429).body("Too many requests. Try again later.");
-        }
-
         String phone = request.get("phone");
         User user = userService.getUserByPhone(phone)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -147,8 +139,14 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Phone is already verified.");
         }
 
+        if (!otpService.tryConsumePhoneOtpBucket(user)) {
+            return ResponseEntity.status(429).body("Too many requests. Try again later.");
+        }
+
         otpService.sendPhoneOtp(user);
         return ResponseEntity.ok("Phone OTP resent successfully.");
+
+
     }
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody Map<String, String> request) {
