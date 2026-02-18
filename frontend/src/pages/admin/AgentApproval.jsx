@@ -8,9 +8,7 @@ const AgentApproval = () => {
   const [agents, setAgents] = useState([])
   const [loading, setLoading] = useState(true)
   const [pendingAction, setPendingAction] = useState(null)
-  // pendingAction = { type: 'approve'|'reject', agentId: number }
 
-  // Load agents on mount
   useEffect(() => { fetchAgents() }, [])
 
   const fetchAgents = async () => {
@@ -24,34 +22,41 @@ const AgentApproval = () => {
     }
   }
 
-  // Opens modal with action type and agent id
   const handleApprove = (id) => setPendingAction({ type: 'approve', agentId: id })
   const handleReject = (id) => setPendingAction({ type: 'reject', agentId: id })
 
-  // Called when modal "Yes, Confirm" is clicked
   const handleConfirm = async () => {
     const { type, agentId } = pendingAction
     try {
       if (type === 'approve') {
         await approveAgent(agentId)
-        toast.success('✅ Agent Approved!')
+        toast.success('Agent approved successfully!')
       } else {
         await rejectAgent(agentId)
-        toast.success('❌ Agent Rejected')
+        toast.success('Agent application rejected')
       }
-      fetchAgents()  // Refresh list
+      fetchAgents()
     } catch {
       toast.error('Something went wrong!')
     } finally {
-      setPendingAction(null)  // Close modal
+      setPendingAction(null)
     }
   }
 
-  if (loading) return <p className="text-center py-10">Loading agents...</p>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    )
+  }
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Agent Approvals</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-slate-800">Agent Approvals</h1>
+        <p className="text-slate-500 mt-1">Review and manage agent applications</p>
+      </div>
 
       <AgentTable
         agents={agents}
@@ -59,12 +64,11 @@ const AgentApproval = () => {
         onReject={handleReject}
       />
 
-      {/* Show modal only when pendingAction is set */}
       {pendingAction && (
         <ConfirmModal
           message={
             pendingAction.type === 'approve'
-              ? 'This will approve the agent and give them access.'
+              ? 'This will approve the agent and give them access to the platform.'
               : 'This will permanently reject this agent application.'
           }
           type={pendingAction.type === 'reject' ? 'danger' : 'warning'}
