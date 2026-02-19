@@ -5,14 +5,16 @@ import com.travelhub.entity.DestinationPackage;
 import com.travelhub.entity.Review;
 import com.travelhub.entity.User;
 import com.travelhub.service.DestinationBookingService;
+import com.travelhub.service.DestinationSearchService;
 import com.travelhub.service.ReviewService;
 import com.travelhub.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
+import org.springframework.security.core.Authentication;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController

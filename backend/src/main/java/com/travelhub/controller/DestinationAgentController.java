@@ -5,7 +5,7 @@ import com.travelhub.entity.User;
 import com.travelhub.service.DestinationAgentService;
 import com.travelhub.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
+import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
