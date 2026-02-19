@@ -50,7 +50,7 @@ public class DestinationBookingService {
                         .travelDate(travelDate)
                         .totalPrice(total)
                         .bookingStatus(BookingStatus.PENDING)
-                        .paymentStatus(PaymentStatus.PENDING)
+                        .paymentStatus(PaymentStatus.UNPAID)
                         .build();
 
         return bookingRepository.save(booking);

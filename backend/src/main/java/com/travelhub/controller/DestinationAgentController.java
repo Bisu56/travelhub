@@ -1,57 +1,80 @@
 package com.travelhub.controller;
 
-import com.travelhub.entity.DestinationPackage;
+import com.travelhub.Dtos.DestinationRequestDTO;
+import com.travelhub.Dtos.DestinationResponseDTO;
+import com.travelhub.Mapper.DestinationMapper;
 import com.travelhub.entity.User;
+import com.travelhub.service.DestinationAdminService;
 import com.travelhub.service.DestinationAgentService;
 import com.travelhub.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/agent/destinations")
 @RequiredArgsConstructor
 public class DestinationAgentController {
 
-    private final DestinationAgentService service;
+    private final DestinationAgentService agentService;
+    private final DestinationAdminService adminService; // for booking completion
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<DestinationPackage> create(@RequestBody DestinationPackage pkg,
-                                                     Authentication auth) {
+    public ResponseEntity<DestinationResponseDTO> create(
+            @RequestBody DestinationRequestDTO request,
+            Authentication auth
+    ) {
         User agent = userService.getCurrentUser(auth);
-        return ResponseEntity.ok(service.create(pkg, agent));
+        return ResponseEntity.ok(
+                DestinationMapper.toDTO(agentService.create(request, agent))
+        );
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<DestinationPackage> update(@PathVariable Long id,
-                                                     @RequestBody DestinationPackage pkg,
-                                                     Authentication auth) {
+    public ResponseEntity<DestinationResponseDTO> update(
+            @PathVariable Long id,
+            @RequestBody DestinationRequestDTO request,
+            Authentication auth
+    ) {
         User agent = userService.getCurrentUser(auth);
-        return ResponseEntity.ok(service.update(id, pkg, agent));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id,
-                                         Authentication auth) {
-        User agent = userService.getCurrentUser(auth);
-        service.delete(id, agent);
-        return ResponseEntity.ok("Package soft-deleted");
+        return ResponseEntity.ok(
+                DestinationMapper.toDTO(agentService.update(id, request, agent))
+        );
     }
 
     @PostMapping("/{id}/submit")
-    public ResponseEntity<DestinationPackage> submit(@PathVariable Long id,
-                                                     Authentication auth) {
+    public ResponseEntity<DestinationResponseDTO> submit(
+            @PathVariable Long id,
+            Authentication auth
+    ) {
         User agent = userService.getCurrentUser(auth);
-        return ResponseEntity.ok(service.submit(id, agent));
+        return ResponseEntity.ok(
+                DestinationMapper.toDTO(agentService.submit(id, agent))
+        );
     }
 
     @GetMapping("/my-packages")
-    public ResponseEntity<List<DestinationPackage>> myPackages(Authentication auth) {
+    public ResponseEntity<List<DestinationResponseDTO>> myPackages(Authentication auth) {
         User agent = userService.getCurrentUser(auth);
-        return ResponseEntity.ok(service.getAgentPackages(agent));
+        List<DestinationResponseDTO> list = agentService.getAgentPackages(agent)
+                .stream()
+                .map(DestinationMapper::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(list);
+    }
+
+    @PostMapping("/booking/{bookingId}/complete")
+    public ResponseEntity<String> completeBooking(
+            @PathVariable Long bookingId,
+            Authentication auth
+    ) {
+        User agent = userService.getCurrentUser(auth);
+        adminService.markBookingCompleted(bookingId, agent);
+        return ResponseEntity.ok("Booking marked as COMPLETED and user notified.");
     }
 }

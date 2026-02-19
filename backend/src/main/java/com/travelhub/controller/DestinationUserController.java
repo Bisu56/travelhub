@@ -4,6 +4,7 @@ import com.travelhub.entity.DestinationBooking;
 import com.travelhub.entity.DestinationPackage;
 import com.travelhub.entity.Review;
 import com.travelhub.entity.User;
+import com.travelhub.entity.enums.DestinationType;
 import com.travelhub.service.DestinationBookingService;
 import com.travelhub.service.DestinationSearchService;
 import com.travelhub.service.ReviewService;
@@ -31,11 +32,16 @@ public class DestinationUserController {
     public ResponseEntity<List<DestinationPackage>> search(
             @RequestParam(required = false) String country,
             @RequestParam(required = false) String city,
+            @RequestParam(required = false) DestinationType type,
             @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate travelDate
     ) {
-        return ResponseEntity.ok(searchService.search(country, city, minPrice, maxPrice));
+        return ResponseEntity.ok(
+                searchService.search(country, city, type, minPrice, maxPrice, travelDate)
+        );
     }
+
 
     @PostMapping("/{packageId}/book")
     public ResponseEntity<DestinationBooking> book(@PathVariable Long packageId,

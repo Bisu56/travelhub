@@ -21,8 +21,8 @@ public class AgentProfile {
     private String companyName;
 
     @Column(nullable = true)
-    private String documents; // Could store URLs or file paths
+    private String documents;
 
     @Column(nullable = false)
-    private Boolean approvalStatus = false; // Default pending
+    private Boolean approvalStatus = false;
 }
