@@ -16,8 +16,8 @@ public class PackageInclusion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "package_id")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "package_id", nullable = false, unique = true)
     private DestinationPackage destinationPackage;
 
     private Boolean includesHotel;

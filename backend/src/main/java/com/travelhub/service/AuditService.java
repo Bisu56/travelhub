@@ -11,23 +11,30 @@ public class AuditService {
 
     private final AuditLogRepository auditLogRepository;
 
-    // Log action without email (admin actions)
+    // For admin actions without IP
     public void logAdminAction(String action) {
         AuditLog log = AuditLog.builder()
-                .email(null)   // Optional: no email for admin actions
+                .email(null)
                 .action(action)
+                .ipAddress(null)
                 .timestamp(Instant.now())
                 .build();
         auditLogRepository.save(log);
     }
 
-    // Log action with email (user actions)
-    public void logAction(String email, String action) {
+    // For user/admin actions with email + IP
+    public void log(String email, String action, String ip) {
         AuditLog log = AuditLog.builder()
                 .email(email)
                 .action(action)
+                .ipAddress(ip)
                 .timestamp(Instant.now())
                 .build();
         auditLogRepository.save(log);
+    }
+
+    // For user action without IP
+    public void logAction(String email, String action) {
+        log(email, action, null);
     }
 }

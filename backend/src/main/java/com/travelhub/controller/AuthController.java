@@ -6,7 +6,6 @@ import com.travelhub.entity.enums.AccountStatus;
 import com.travelhub.service.AuthService;
 import com.travelhub.service.OtpService;
 import com.travelhub.service.UserService;
-import io.github.bucket4j.Bucket;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -108,7 +107,8 @@ public class AuthController {
                     user.setAccountStatus(AccountStatus.PENDING);
                 }
             }
-            case ADMIN -> user.setAccountStatus(AccountStatus.APPROVED);
+        //    REMOVED DUPLICATE ACCOUNT STATUS APPROVED
+//            case ADMIN -> user.setAccountStatus(AccountStatus.APPROVED);
         }
     }
     @PostMapping("/resend/email-otp")
