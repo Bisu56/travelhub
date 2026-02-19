@@ -74,6 +74,9 @@ public class DestinationPackage {
         this.ratingAverage = avg;
         this.totalReviews = total;
     }
+    @Embedded
+    private PackageInclusionDetails inclusionDetails;
+
 
 
     @PrePersist

@@ -8,7 +8,6 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-
 @Data
 @Builder
 public class DestinationResponseDTO {
@@ -40,4 +39,12 @@ public class DestinationResponseDTO {
 
     private Long agentId;
     private String agentEmail;
+
+    private Boolean includesHotel;
+    private Boolean includesFlight;
+    private Boolean includesFood;
+    private Boolean includesTransport;
+
+    private String hotelType;
+    private String flightClass;
 }

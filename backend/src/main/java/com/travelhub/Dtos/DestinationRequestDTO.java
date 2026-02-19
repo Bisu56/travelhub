@@ -26,4 +26,13 @@ public class DestinationRequestDTO {
     private BigDecimal discountPrice;
 
     private Integer maxPeople;
+
+    private Boolean includesHotel;
+    private Boolean includesFlight;
+    private Boolean includesFood;
+    private Boolean includesTransport;
+
+    private String hotelType;
+    private String flightClass;
+
 }
