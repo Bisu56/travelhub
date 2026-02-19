@@ -23,7 +23,9 @@ const linkClass = ({ isActive }) =>
      : 'text-emerald-100 hover:bg-white/10 hover:text-white'}`
 
 const AgentLayout = ({ children }) => {
-  const { user, logout } = useAuth()
+  const auth = useAuth()
+  const user = auth?.user || null
+  const logout = auth?.logout || (() => {})
   const location = useLocation()
   const pageTitle = pageTitles[location.pathname] || 'Agent Panel'
 

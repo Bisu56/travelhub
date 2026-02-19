@@ -1,14 +1,9 @@
 import React from 'react';
 import AppRoutes from './routes/AppRoutes';
-import { AuthProvider } from './context/AuthContext';
-import './App.css'; // Assuming you might have some global app styles
+import './App.css';
 
 function App() {
-  return (
-    <AuthProvider>
-      <AppRoutes />
-    </AuthProvider>
-  );
+  return <AppRoutes />;
 }
 
 export default App;
