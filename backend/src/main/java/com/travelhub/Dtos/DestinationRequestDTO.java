@@ -5,7 +5,6 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-
 @Data
 public class DestinationRequestDTO {
 
@@ -21,9 +20,8 @@ public class DestinationRequestDTO {
 
     private List<String> imageUrls;
 
-
     private BigDecimal basePrice;
-    private BigDecimal discountPrice;
+    private BigDecimal discountPercentage;
 
     private Integer maxPeople;
 
@@ -32,7 +30,11 @@ public class DestinationRequestDTO {
     private Boolean includesFood;
     private Boolean includesTransport;
 
+    private BigDecimal hotelCost;
+    private BigDecimal flightCost;
+    private BigDecimal foodCost;
+    private BigDecimal transportCost;
+
     private String hotelType;
     private String flightClass;
-
 }

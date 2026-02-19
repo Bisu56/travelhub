@@ -3,6 +3,8 @@ package com.travelhub.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Embeddable
 @Getter
 @Setter
@@ -11,21 +13,16 @@ import lombok.*;
 @AllArgsConstructor
 public class PackageInclusionDetails {
 
-    @Column(name = "includes_hotel")
     private Boolean includesHotel = false;
-
-    @Column(name = "includes_flight")
     private Boolean includesFlight = false;
-
-    @Column(name = "includes_food")
     private Boolean includesFood = false;
-
-    @Column(name = "includes_transport")
     private Boolean includesTransport = false;
 
-    @Column(name = "hotel_type")
-    private String hotelType;
+    private BigDecimal hotelCost;
+    private BigDecimal flightCost;
+    private BigDecimal foodCost;
+    private BigDecimal transportCost;
 
-    @Column(name = "flight_class")
+    private String hotelType;
     private String flightClass;
 }

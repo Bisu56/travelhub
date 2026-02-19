@@ -22,47 +22,77 @@ public class DestinationBookingService {
 
     private final DestinationPackageRepository packageRepository;
     private final DestinationBookingRepository bookingRepository;
-
+//java docs for help
+    /**
+     * Book a destination package
+     * @param packageId - Package to book
+     * @param people - Number of travelers
+     * @param travelDate - Date of travel
+     * @param user - Booking user
+     * @return DestinationBooking saved booking
+     */
     public DestinationBooking book(Long packageId,
                                    Integer people,
                                    LocalDate travelDate,
                                    User user) {
 
         DestinationPackage pkg = packageRepository.findById(packageId)
-                .orElseThrow();
+                .orElseThrow(() -> new RuntimeException("Package not found"));
 
         if (pkg.getStatus() != PackageStatus.PUBLISHED)
-            throw new RuntimeException("Package not available");
+            throw new RuntimeException("Package is not available for booking");
 
-        BigDecimal pricePerPerson =
-                pkg.getDiscountPrice() != null
-                        ? pkg.getDiscountPrice()
-                        : pkg.getBasePrice();
+        if (pkg.getAvailableFrom() == null || pkg.getAvailableTo() == null) {
+            throw new RuntimeException("Package availability dates not configured");
+        }
 
-        BigDecimal total =
-                pricePerPerson.multiply(BigDecimal.valueOf(people));
+        if (travelDate.isBefore(pkg.getAvailableFrom()) ||
+                travelDate.isAfter(pkg.getAvailableTo())) {
+            throw new RuntimeException("Travel date is outside available range");
+        }
 
-        DestinationBooking booking =
-                DestinationBooking.builder()
-                        .user(user)
-                        .destinationPackage(pkg)
-                        .numberOfPeople(people)
-                        .travelDate(travelDate)
-                        .totalPrice(total)
-                        .bookingStatus(BookingStatus.PENDING)
-                        .paymentStatus(PaymentStatus.UNPAID)
-                        .build();
+        if (people > pkg.getMaxPeople()) {
+            throw new RuntimeException("Exceeds maximum allowed people for this package");
+        }
+
+        BigDecimal pricePerPerson = pkg.getFinalPrice();
+        if (pricePerPerson == null) {
+            throw new IllegalStateException("Package final price not calculated");
+        }
+
+        BigDecimal totalPrice = pricePerPerson.multiply(BigDecimal.valueOf(people));
+
+        DestinationBooking booking = DestinationBooking.builder()
+                .user(user)
+                .destinationPackage(pkg)
+                .numberOfPeople(people)
+                .travelDate(travelDate)
+                .totalPrice(totalPrice)
+                .bookingStatus(BookingStatus.PENDING)
+                .paymentStatus(PaymentStatus.UNPAID)
+                .build();
 
         return bookingRepository.save(booking);
     }
 
+    /**
+     * Cancel a booking
+     * @param bookingId - Booking to cancel
+     * @param user - Booking user
+     */
     public void cancel(Long bookingId, User user) {
-        DestinationBooking booking =
-                bookingRepository.findById(bookingId).orElseThrow();
+        DestinationBooking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
 
-        if (!booking.getUser().getId().equals(user.getId()))
-            throw new RuntimeException("Unauthorized");
+        if (!booking.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Unauthorized to cancel this booking");
+        }
+
+        if (booking.getBookingStatus() == BookingStatus.CANCELLED) {
+            throw new RuntimeException("Booking already cancelled");
+        }
 
         booking.setBookingStatus(BookingStatus.CANCELLED);
+        bookingRepository.save(booking);
     }
 }
