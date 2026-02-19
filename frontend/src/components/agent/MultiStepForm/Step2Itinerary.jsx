@@ -4,7 +4,10 @@ const Step2Itinerary = ({ formData, setFormData }) => {
   const addDay = () => {
     setFormData(prev => ({
       ...prev,
-      itinerary: [...prev.itinerary, { day: prev.itinerary.length + 1, title: '', description: '' }]
+      itinerary: [
+        ...prev.itinerary,
+        { day_number: prev.itinerary.length + 1, title: '', description: '' }
+      ]
     }))
   }
 
@@ -13,7 +16,7 @@ const Step2Itinerary = ({ formData, setFormData }) => {
       ...prev,
       itinerary: prev.itinerary
         .filter((_, i) => i !== index)
-        .map((item, i) => ({ ...item, day: i + 1 }))
+        .map((item, i) => ({ ...item, day_number: i + 1 }))
     }))
   }
 
@@ -62,9 +65,9 @@ const Step2Itinerary = ({ formData, setFormData }) => {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <span className="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center text-sm font-bold">
-                    {item.day}
+                    {item.day_number}
                   </span>
-                  <span className="text-sm font-semibold text-slate-700">Day {item.day}</span>
+                  <span className="text-sm font-semibold text-slate-700">Day {item.day_number}</span>
                 </div>
                 <button
                   type="button"

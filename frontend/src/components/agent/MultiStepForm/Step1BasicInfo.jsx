@@ -1,9 +1,38 @@
-import { FiMapPin, FiFileText, FiAlignLeft, FiUsers } from 'react-icons/fi'
+import { useState, useEffect } from 'react'
+import { FiMapPin, FiFileText, FiAlignLeft, FiClock, FiAlertCircle } from 'react-icons/fi'
+import { getDestinations } from '../../../services/adminService'
 
-const Step1BasicInfo = ({ formData, setFormData }) => {
+const Step1BasicInfo = ({ formData, setFormData, errors }) => {
+  const [destinations, setDestinations] = useState([])
+  const [loadingDest, setLoadingDest] = useState(true)
+
+  useEffect(() => {
+    fetchDestinations()
+  }, [])
+
+  const fetchDestinations = async () => {
+    try {
+      const res = await getDestinations()
+      setDestinations(res.data || [])
+    } catch {
+      setDestinations([])
+    } finally {
+      setLoadingDest(false)
+    }
+  }
+
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
+
+  const fieldError = (name) => errors?.[name]
+
+  const inputClass = (name) =>
+    `w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 text-slate-800 placeholder-slate-400 border transition-all focus:outline-none focus:ring-2 focus:border-transparent ${
+      fieldError(name)
+        ? 'border-red-300 focus:ring-red-500'
+        : 'border-slate-200 focus:ring-emerald-500'
+    }`
 
   return (
     <div className="space-y-5">
@@ -13,7 +42,9 @@ const Step1BasicInfo = ({ formData, setFormData }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-1.5">Package Title</label>
+        <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+          Package Title <span className="text-red-500">*</span>
+        </label>
         <div className="relative">
           <FiFileText className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
           <input
@@ -22,13 +53,18 @@ const Step1BasicInfo = ({ formData, setFormData }) => {
             value={formData.title}
             onChange={handleChange}
             placeholder="e.g. Romantic Paris Getaway"
-            className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 text-slate-800 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+            className={inputClass('title')}
           />
         </div>
+        {fieldError('title') && (
+          <p className="mt-1 text-xs text-red-500 flex items-center gap-1"><FiAlertCircle size={12} />{fieldError('title')}</p>
+        )}
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-1.5">Description</label>
+        <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+          Description <span className="text-red-500">*</span>
+        </label>
         <div className="relative">
           <FiAlignLeft className="absolute left-3 top-3 text-slate-400" size={16} />
           <textarea
@@ -37,41 +73,62 @@ const Step1BasicInfo = ({ formData, setFormData }) => {
             onChange={handleChange}
             placeholder="Describe what makes this package special..."
             rows={4}
-            className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 text-slate-800 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all resize-none"
+            className={`w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 text-slate-800 placeholder-slate-400 border transition-all focus:outline-none focus:ring-2 focus:border-transparent resize-none ${
+              fieldError('description') ? 'border-red-300 focus:ring-red-500' : 'border-slate-200 focus:ring-emerald-500'
+            }`}
           />
         </div>
+        {fieldError('description') && (
+          <p className="mt-1 text-xs text-red-500 flex items-center gap-1"><FiAlertCircle size={12} />{fieldError('description')}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Destination ID</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+            Destination <span className="text-red-500">*</span>
+          </label>
           <div className="relative">
             <FiMapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-            <input
-              type="text"
+            <select
               name="destination_id"
               value={formData.destination_id}
               onChange={handleChange}
-              placeholder="e.g. 1"
-              className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 text-slate-800 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-            />
+              disabled={loadingDest}
+              className={inputClass('destination_id')}
+            >
+              <option value="">{loadingDest ? 'Loading destinations...' : 'Select a destination'}</option>
+              {destinations.map(dest => (
+                <option key={dest.id} value={dest.id}>
+                  {dest.name || dest.title || `Destination #${dest.id}`}
+                </option>
+              ))}
+            </select>
           </div>
+          {fieldError('destination_id') && (
+            <p className="mt-1 text-xs text-red-500 flex items-center gap-1"><FiAlertCircle size={12} />{fieldError('destination_id')}</p>
+          )}
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Max Capacity</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+            Duration (Days) <span className="text-red-500">*</span>
+          </label>
           <div className="relative">
-            <FiUsers className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+            <FiClock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
             <input
               type="number"
-              name="max_capacity"
-              value={formData.max_capacity}
+              name="duration_days"
+              value={formData.duration_days}
               onChange={handleChange}
-              placeholder="e.g. 20"
+              placeholder="e.g. 5"
               min="1"
-              className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 text-slate-800 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+              className={inputClass('duration_days')}
             />
           </div>
+          {fieldError('duration_days') && (
+            <p className="mt-1 text-xs text-red-500 flex items-center gap-1"><FiAlertCircle size={12} />{fieldError('duration_days')}</p>
+          )}
         </div>
       </div>
     </div>

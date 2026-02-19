@@ -1,6 +1,6 @@
-import { FiDollarSign, FiClock, FiCheck, FiX } from 'react-icons/fi'
+import { FiDollarSign, FiUsers, FiCheck, FiX, FiAlertCircle } from 'react-icons/fi'
 
-const Step3Pricing = ({ formData, setFormData }) => {
+const Step3Pricing = ({ formData, setFormData, errors }) => {
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
@@ -8,6 +8,15 @@ const Step3Pricing = ({ formData, setFormData }) => {
   const handleListChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
+
+  const fieldError = (name) => errors?.[name]
+
+  const inputClass = (name) =>
+    `w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 text-slate-800 placeholder-slate-400 border transition-all focus:outline-none focus:ring-2 focus:border-transparent ${
+      fieldError(name)
+        ? 'border-red-300 focus:ring-red-500'
+        : 'border-slate-200 focus:ring-emerald-500'
+    }`
 
   const includedList = formData.included_services
     ? formData.included_services.split(',').map(s => s.trim()).filter(Boolean)
@@ -26,7 +35,9 @@ const Step3Pricing = ({ formData, setFormData }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Price (USD)</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+            Price (USD) <span className="text-red-500">*</span>
+          </label>
           <div className="relative">
             <FiDollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
             <input
@@ -35,26 +46,34 @@ const Step3Pricing = ({ formData, setFormData }) => {
               value={formData.price}
               onChange={handleChange}
               placeholder="e.g. 1299"
-              min="0"
-              className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 text-slate-800 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+              min="1"
+              className={inputClass('price')}
             />
           </div>
+          {fieldError('price') && (
+            <p className="mt-1 text-xs text-red-500 flex items-center gap-1"><FiAlertCircle size={12} />{fieldError('price')}</p>
+          )}
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Duration (Days)</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+            Max Capacity <span className="text-red-500">*</span>
+          </label>
           <div className="relative">
-            <FiClock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+            <FiUsers className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
             <input
               type="number"
-              name="duration_days"
-              value={formData.duration_days}
+              name="max_capacity"
+              value={formData.max_capacity}
               onChange={handleChange}
-              placeholder="e.g. 5"
+              placeholder="e.g. 20"
               min="1"
-              className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 text-slate-800 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+              className={inputClass('max_capacity')}
             />
           </div>
+          {fieldError('max_capacity') && (
+            <p className="mt-1 text-xs text-red-500 flex items-center gap-1"><FiAlertCircle size={12} />{fieldError('max_capacity')}</p>
+          )}
         </div>
       </div>
 
@@ -116,10 +135,10 @@ const Step3Pricing = ({ formData, setFormData }) => {
             ${formData.price ? Number(formData.price).toLocaleString() : '0'}
           </span>
         </div>
-        {formData.duration_days && (
+        {formData.max_capacity && (
           <div className="flex items-center justify-between mt-1">
-            <span className="text-sm text-blue-600">Duration</span>
-            <span className="text-sm font-medium text-blue-700">{formData.duration_days} day{formData.duration_days > 1 ? 's' : ''}</span>
+            <span className="text-sm text-blue-600">Max capacity</span>
+            <span className="text-sm font-medium text-blue-700">{formData.max_capacity} traveler{Number(formData.max_capacity) > 1 ? 's' : ''}</span>
           </div>
         )}
       </div>

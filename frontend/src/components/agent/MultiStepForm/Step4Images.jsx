@@ -1,5 +1,6 @@
 import { useRef } from 'react'
-import { FiUploadCloud, FiX, FiImage } from 'react-icons/fi'
+import { FiUploadCloud, FiImage } from 'react-icons/fi'
+import ImageGallery from '../ImageGallery'
 
 const Step4Images = ({ formData, setFormData }) => {
   const fileInputRef = useRef(null)
@@ -66,29 +67,10 @@ const Step4Images = ({ formData, setFormData }) => {
           <p className="text-sm font-semibold text-slate-700 mb-3">
             Uploaded Images ({formData.images.length})
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {formData.images.map((img, index) => (
-              <div key={index} className="relative group rounded-xl overflow-hidden border border-slate-200 aspect-video bg-slate-100">
-                <img
-                  src={img.preview || img}
-                  alt={img.name || `Image ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                  >
-                    <FiX size={16} />
-                  </button>
-                </div>
-                <p className="absolute bottom-0 inset-x-0 bg-black/50 text-white text-xs px-2 py-1 truncate">
-                  {img.name || `Image ${index + 1}`}
-                </p>
-              </div>
-            ))}
-          </div>
+          <ImageGallery
+            images={formData.images.map(img => img.preview || img)}
+            onRemove={removeImage}
+          />
         </div>
       )}
 
