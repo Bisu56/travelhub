@@ -4,11 +4,9 @@ import com.travelhub.entity.enums.DestinationType;
 import com.travelhub.entity.enums.PackageStatus;
 import lombok.Builder;
 import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-
 @Data
 @Builder
 public class DestinationResponseDTO {
@@ -29,7 +27,8 @@ public class DestinationResponseDTO {
     private List<String> imageUrls;
 
     private BigDecimal basePrice;
-    private BigDecimal discountPrice;
+    private BigDecimal discountPercentage;
+    private BigDecimal finalPrice;
 
     private Integer maxPeople;
 
@@ -40,4 +39,17 @@ public class DestinationResponseDTO {
 
     private Long agentId;
     private String agentEmail;
+
+    private Boolean includesHotel;
+    private Boolean includesFlight;
+    private Boolean includesFood;
+    private Boolean includesTransport;
+
+    private BigDecimal hotelCost;
+    private BigDecimal flightCost;
+    private BigDecimal foodCost;
+    private BigDecimal transportCost;
+
+    private String hotelType;
+    private String flightClass;
 }

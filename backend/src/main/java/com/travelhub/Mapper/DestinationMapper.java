@@ -1,9 +1,7 @@
 package com.travelhub.Mapper;
 
-import com.travelhub.Dtos.DestinationRequestDTO;
-import com.travelhub.Dtos.DestinationResponseDTO;
-import com.travelhub.entity.DestinationPackage;
-import com.travelhub.entity.User;
+import com.travelhub.Dtos.*;
+import com.travelhub.entity.*;
 
 public class DestinationMapper {
 
@@ -11,6 +9,21 @@ public class DestinationMapper {
             DestinationRequestDTO dto,
             User agent
     ) {
+
+        PackageInclusionDetails inclusion =
+                PackageInclusionDetails.builder()
+                        .includesHotel(dto.getIncludesHotel())
+                        .includesFlight(dto.getIncludesFlight())
+                        .includesFood(dto.getIncludesFood())
+                        .includesTransport(dto.getIncludesTransport())
+                        .hotelCost(dto.getHotelCost())
+                        .flightCost(dto.getFlightCost())
+                        .foodCost(dto.getFoodCost())
+                        .transportCost(dto.getTransportCost())
+                        .hotelType(dto.getHotelType())
+                        .flightClass(dto.getFlightClass())
+                        .build();
+
         return DestinationPackage.builder()
                 .title(dto.getTitle())
                 .description(dto.getDescription())
@@ -21,13 +34,18 @@ public class DestinationMapper {
                 .availableFrom(dto.getAvailableFrom())
                 .availableTo(dto.getAvailableTo())
                 .basePrice(dto.getBasePrice())
-                .discountPrice(dto.getDiscountPrice())
+                .discountPercentage(dto.getDiscountPercentage())
                 .maxPeople(dto.getMaxPeople())
                 .imageUrls(dto.getImageUrls())
+                .inclusionDetails(inclusion)
                 .createdBy(agent)
                 .build();
     }
+
     public static DestinationResponseDTO toDTO(DestinationPackage entity) {
+
+        PackageInclusionDetails inclusion = entity.getInclusionDetails();
+
         return DestinationResponseDTO.builder()
                 .id(entity.getId())
                 .title(entity.getTitle())
@@ -39,7 +57,8 @@ public class DestinationMapper {
                 .availableFrom(entity.getAvailableFrom())
                 .availableTo(entity.getAvailableTo())
                 .basePrice(entity.getBasePrice())
-                .discountPrice(entity.getDiscountPrice())
+                .discountPercentage(entity.getDiscountPercentage())
+                .finalPrice(entity.getFinalPrice())
                 .maxPeople(entity.getMaxPeople())
                 .ratingAverage(entity.getRatingAverage())
                 .totalReviews(entity.getTotalReviews())
@@ -47,6 +66,18 @@ public class DestinationMapper {
                 .imageUrls(entity.getImageUrls())
                 .agentId(entity.getCreatedBy() != null ? entity.getCreatedBy().getId() : null)
                 .agentEmail(entity.getCreatedBy() != null ? entity.getCreatedBy().getEmail() : null)
+
+                .includesHotel(inclusion != null ? inclusion.getIncludesHotel() : false)
+                .includesFlight(inclusion != null ? inclusion.getIncludesFlight() : false)
+                .includesFood(inclusion != null ? inclusion.getIncludesFood() : false)
+                .includesTransport(inclusion != null ? inclusion.getIncludesTransport() : false)
+                .hotelCost(inclusion != null ? inclusion.getHotelCost() : null)
+                .flightCost(inclusion != null ? inclusion.getFlightCost() : null)
+                .foodCost(inclusion != null ? inclusion.getFoodCost() : null)
+                .transportCost(inclusion != null ? inclusion.getTransportCost() : null)
+                .hotelType(inclusion != null ? inclusion.getHotelType() : null)
+                .flightClass(inclusion != null ? inclusion.getFlightClass() : null)
+
                 .build();
     }
 }
