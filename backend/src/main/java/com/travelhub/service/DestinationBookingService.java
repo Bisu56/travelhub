@@ -22,14 +22,15 @@ public class DestinationBookingService {
 
     private final DestinationPackageRepository packageRepository;
     private final DestinationBookingRepository bookingRepository;
-//java docs for help
+
     /**
-     * Book a destination package
-     * @param packageId - Package to book
-     * @param people - Number of travelers
+     * Book a destination package with dynamic pricing.
+     *
+     * @param packageId  - Package to book
+     * @param people     - Number of travelers
      * @param travelDate - Date of travel
-     * @param user - Booking user
-     * @return DestinationBooking saved booking
+     * @param user       - Booking user
+     * @return DestinationBooking - saved booking
      */
     public DestinationBooking book(Long packageId,
                                    Integer people,
@@ -42,23 +43,19 @@ public class DestinationBookingService {
         if (pkg.getStatus() != PackageStatus.PUBLISHED)
             throw new RuntimeException("Package is not available for booking");
 
-        if (pkg.getAvailableFrom() == null || pkg.getAvailableTo() == null) {
+        if (pkg.getAvailableFrom() == null || pkg.getAvailableTo() == null)
             throw new RuntimeException("Package availability dates not configured");
-        }
 
-        if (travelDate.isBefore(pkg.getAvailableFrom()) ||
-                travelDate.isAfter(pkg.getAvailableTo())) {
+        if (travelDate.isBefore(pkg.getAvailableFrom()) || travelDate.isAfter(pkg.getAvailableTo()))
             throw new RuntimeException("Travel date is outside available range");
-        }
 
-        if (people > pkg.getMaxPeople()) {
+        if (travelDate.isBefore(LocalDate.now()))
+            throw new RuntimeException("Cannot book for past dates");
+
+        if (people > pkg.getMaxPeople())
             throw new RuntimeException("Exceeds maximum allowed people for this package");
-        }
 
-        BigDecimal pricePerPerson = pkg.getFinalPrice();
-        if (pricePerPerson == null) {
-            throw new IllegalStateException("Package final price not calculated");
-        }
+        BigDecimal pricePerPerson = calculatePricePerPerson(pkg);
 
         BigDecimal totalPrice = pricePerPerson.multiply(BigDecimal.valueOf(people));
 
@@ -76,23 +73,58 @@ public class DestinationBookingService {
     }
 
     /**
-     * Cancel a booking
+     * Cancel a booking.
+     *
      * @param bookingId - Booking to cancel
-     * @param user - Booking user
+     * @param user      - Booking user
      */
     public void cancel(Long bookingId, User user) {
         DestinationBooking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
-        if (!booking.getUser().getId().equals(user.getId())) {
+        if (!booking.getUser().getId().equals(user.getId()))
             throw new RuntimeException("Unauthorized to cancel this booking");
-        }
 
-        if (booking.getBookingStatus() == BookingStatus.CANCELLED) {
+        if (booking.getBookingStatus() == BookingStatus.CANCELLED)
             throw new RuntimeException("Booking already cancelled");
-        }
 
         booking.setBookingStatus(BookingStatus.CANCELLED);
         bookingRepository.save(booking);
+    }
+
+    /**
+     * Calculate dynamic price per person based on package base price and inclusions.
+     *
+     * @param pkg - Destination package
+     * @return BigDecimal - final price per person
+     */
+    private BigDecimal calculatePricePerPerson(DestinationPackage pkg) {
+        BigDecimal total = pkg.getBasePrice() != null ? pkg.getBasePrice() : BigDecimal.ZERO;
+
+        if (pkg.getInclusionDetails() != null) {
+            if (Boolean.TRUE.equals(pkg.getInclusionDetails().getIncludesHotel()))
+                total = total.add(nullSafe(pkg.getInclusionDetails().getHotelCost()));
+
+            if (Boolean.TRUE.equals(pkg.getInclusionDetails().getIncludesFlight()))
+                total = total.add(nullSafe(pkg.getInclusionDetails().getFlightCost()));
+
+            if (Boolean.TRUE.equals(pkg.getInclusionDetails().getIncludesFood()))
+                total = total.add(nullSafe(pkg.getInclusionDetails().getFoodCost()));
+
+            if (Boolean.TRUE.equals(pkg.getInclusionDetails().getIncludesTransport()))
+                total = total.add(nullSafe(pkg.getInclusionDetails().getTransportCost()));
+        }
+
+        if (pkg.getDiscountPercentage() != null && pkg.getDiscountPercentage().compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal discount = total.multiply(pkg.getDiscountPercentage())
+                    .divide(BigDecimal.valueOf(100));
+            total = total.subtract(discount);
+        }
+
+        return total;
+    }
+
+    private BigDecimal nullSafe(BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
     }
 }
