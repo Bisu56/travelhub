@@ -69,48 +69,40 @@ function AppRoutes() {
           }
         />
 
-        {/* ── AGENT ROUTES (protected) ── */}
+        {/* ── AGENT ROUTES (temporarily public for testing) ── */}
         <Route
           path="/agent/dashboard"
           element={
-            <PermissionGuard allowedRole="AGENT">
               <AgentLayout>
                 <AgentDashboard />
               </AgentLayout>
-            </PermissionGuard>
           }
         />
 
         <Route
           path="/agent/packages"
           element={
-            <PermissionGuard allowedRole="AGENT">
               <AgentLayout>
                 <AgentPackages />
               </AgentLayout>
-            </PermissionGuard>
           }
         />
 
         <Route
           path="/agent/packages/create"
           element={
-            <PermissionGuard allowedRole="AGENT">
               <AgentLayout>
                 <CreatePackage />
               </AgentLayout>
-            </PermissionGuard>
           }
         />
 
         <Route
           path="/agent/packages/edit/:id"
           element={
-            <PermissionGuard allowedRole="AGENT">
               <AgentLayout>
                 <EditPackage />
               </AgentLayout>
-            </PermissionGuard>
           }
         />
 
