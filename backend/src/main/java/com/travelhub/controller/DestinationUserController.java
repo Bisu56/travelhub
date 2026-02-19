@@ -9,24 +9,40 @@ import com.travelhub.service.DestinationBookingService;
 import com.travelhub.service.DestinationSearchService;
 import com.travelhub.service.ReviewService;
 import com.travelhub.service.UserService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDate;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/user/destinations")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('USER')")
 public class DestinationUserController {
 
     private final DestinationSearchService searchService;
     private final DestinationBookingService bookingService;
     private final ReviewService reviewService;
     private final UserService userService;
+
+    public record BookingRequest(
+            @NotNull @Min(1) Integer people,
+            @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate travelDate
+    ) {}
+
+    public record ReviewRequest(
+            @NotNull @Min(1) @Max(5) Integer rating,
+            @NotBlank String comment
+    ) {}
 
     @GetMapping("/search")
     public ResponseEntity<List<DestinationPackage>> search(
@@ -35,38 +51,46 @@ public class DestinationUserController {
             @RequestParam(required = false) DestinationType type,
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate travelDate
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate travelDate,
+            @RequestParam(required = false) Boolean includesHotel,
+            @RequestParam(required = false) Boolean includesFlight,
+            @RequestParam(required = false) Boolean includesFood,
+            @RequestParam(required = false) Boolean includesTransport
     ) {
-        return ResponseEntity.ok(
-                searchService.search(country, city, type, minPrice, maxPrice, travelDate)
+        List<DestinationPackage> results = searchService.search(
+                country, city, type, minPrice, maxPrice, travelDate,
+                includesHotel, includesFlight, includesFood, includesTransport
         );
+        return ResponseEntity.ok(results);
     }
 
-
     @PostMapping("/{packageId}/book")
-    public ResponseEntity<DestinationBooking> book(@PathVariable Long packageId,
-                                                   @RequestParam Integer people,
-                                                   @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate travelDate,
-                                                   Authentication auth) {
+    public ResponseEntity<DestinationBooking> book(
+            @PathVariable Long packageId,
+            @Valid @RequestBody BookingRequest request,
+            Authentication auth
+    ) {
         User user = userService.getCurrentUser(auth);
-        return ResponseEntity.ok(bookingService.book(packageId, people, travelDate, user));
+        DestinationBooking booking = bookingService.book(packageId, request.people(), request.travelDate(), user);
+        return ResponseEntity.ok(booking);
     }
 
     @PostMapping("/booking/{bookingId}/cancel")
-    public ResponseEntity<String> cancel(@PathVariable Long bookingId,
-                                         Authentication auth) {
+    public ResponseEntity<?> cancel(@PathVariable Long bookingId, Authentication auth) {
         User user = userService.getCurrentUser(auth);
         bookingService.cancel(bookingId, user);
-        return ResponseEntity.ok("Booking cancelled");
+        return ResponseEntity.ok().body("{\"message\":\"Booking cancelled\"}");
     }
 
     @PostMapping("/{packageId}/review")
-    public ResponseEntity<Review> review(@PathVariable Long packageId,
-                                         @RequestParam Integer rating,
-                                         @RequestParam String comment,
-                                         Authentication auth) {
+    public ResponseEntity<Review> review(
+            @PathVariable Long packageId,
+            @Valid @RequestBody ReviewRequest request,
+            Authentication auth
+    ) {
         User user = userService.getCurrentUser(auth);
-        return ResponseEntity.ok(reviewService.addReview(packageId, rating, comment, user));
+        Review r = reviewService.addReview(packageId, request.rating(), request.comment(), user);
+        return ResponseEntity.ok(r);
     }
 
     @GetMapping("/{packageId}/reviews")
