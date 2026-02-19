@@ -18,6 +18,13 @@ import AdminDashboard from '../pages/admin/AdminDashboard';
 import AgentApproval from '../pages/admin/AgentApproval';
 import Destination from '../pages/admin/Destination';
 
+// Agent layout & pages
+import AgentLayout from '../components/layout/AgentLayout';
+import AgentDashboard from '../pages/agent/AgentDashboard';
+import AgentPackages from '../pages/agent/AgentPackage';
+import CreatePackage from '../pages/agent/CreatePackages';
+import EditPackage from '../pages/agent/EditPackage';
+
 function AppRoutes() {
   return (
     <Router>
@@ -32,8 +39,6 @@ function AppRoutes() {
           <Route path="/flights" element={<Flights />} />
           <Route path="/hotels" element={<Hotels />} />
           <Route path="/cars" element={<Cars />} />
-
-          {/* Add more public routes here if needed */}
         </Route>
 
         {/* ── ADMIN ROUTES (temporarily public) ── */}
@@ -64,7 +69,50 @@ function AppRoutes() {
           }
         />
 
-        {/* Add more admin routes here following the same pattern */}
+        {/* ── AGENT ROUTES (protected) ── */}
+        <Route
+          path="/agent/dashboard"
+          element={
+            <PermissionGuard allowedRole="AGENT">
+              <AgentLayout>
+                <AgentDashboard />
+              </AgentLayout>
+            </PermissionGuard>
+          }
+        />
+
+        <Route
+          path="/agent/packages"
+          element={
+            <PermissionGuard allowedRole="AGENT">
+              <AgentLayout>
+                <AgentPackages />
+              </AgentLayout>
+            </PermissionGuard>
+          }
+        />
+
+        <Route
+          path="/agent/packages/create"
+          element={
+            <PermissionGuard allowedRole="AGENT">
+              <AgentLayout>
+                <CreatePackage />
+              </AgentLayout>
+            </PermissionGuard>
+          }
+        />
+
+        <Route
+          path="/agent/packages/edit/:id"
+          element={
+            <PermissionGuard allowedRole="AGENT">
+              <AgentLayout>
+                <EditPackage />
+              </AgentLayout>
+            </PermissionGuard>
+          }
+        />
 
       </Routes>
     </Router>
