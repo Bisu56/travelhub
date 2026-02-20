@@ -5,9 +5,9 @@ import Footer from './Footer';
 
 function Layout() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-cyan-50 to-white">
       <Header />
-      <main className="flex-grow container mx-auto px-4 py-4 pt-4">
+      <main className="flex-grow w-full">
         <Outlet />
       </main>
       <Footer />
