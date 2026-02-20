@@ -1,26 +1,19 @@
-import { useState } from "react";
-
 const Pagination = ({ setFilters }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    setFilters(prev => ({ ...prev, page }));
-  };
-
   return (
-    <div className="flex justify-center gap-2 mt-6">
+    <div className="mt-6 flex gap-4">
       <button
-        onClick={() => handlePageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="px-3 py-1 border rounded disabled:opacity-50"
+        onClick={() =>
+          setFilters(prev => ({ ...prev, page: prev.page - 1 }))
+        }
+        className="px-4 py-2 border rounded hover:bg-gray-100"
       >
         Prev
       </button>
-      <span className="px-3 py-1">Page {currentPage}</span>
       <button
-        onClick={() => handlePageChange(currentPage + 1)}
-        className="px-3 py-1 border rounded"
+        onClick={() =>
+          setFilters(prev => ({ ...prev, page: prev.page + 1 }))
+        }
+        className="px-4 py-2 border rounded hover:bg-gray-100"
       >
         Next
       </button>

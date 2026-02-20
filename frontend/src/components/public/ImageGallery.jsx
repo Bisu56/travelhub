@@ -8,6 +8,7 @@ const ImageGallery = ({ images }) => {
   }
 
   return (
+    <div>
       <img
         src={images[selected]}
         alt="Selected"
