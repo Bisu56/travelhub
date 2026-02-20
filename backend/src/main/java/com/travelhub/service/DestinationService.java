@@ -1,4 +1,5 @@
 package com.travelhub.service;
+
 import com.travelhub.Dtos.*;
 import com.travelhub.entity.*;
 import com.travelhub.entity.enums.*;
@@ -10,9 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDate;
+import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -21,9 +23,8 @@ public class DestinationService {
 
     private final DestinationPackageRepository packageRepository;
     private final DestinationBookingRepository bookingRepository;
+    private final ReviewService reviewService;
     private final AuditService auditService;
-
-    // ===== AGENT OPERATIONS =====
 
     public DestinationResponseDTO createPackage(User agent, DestinationRequestDTO dto) {
         if(agent.getRole() != Role.AGENT) throw new ForbiddenException("Only agents can create packages");
@@ -55,8 +56,6 @@ public class DestinationService {
         pkg.setIsDeleted(true);
         packageRepository.save(pkg);
     }
-
-    // ===== ADMIN OPERATIONS =====
 
     public DestinationResponseDTO approvePackage(User admin, Long id, String ip) {
         DestinationPackage pkg = getPackage(id);
@@ -99,8 +98,6 @@ public class DestinationService {
                 .map(DestinationMapper::toDTO).toList();
     }
 
-    // ===== SEARCH =====
-
     public List<DestinationResponseDTO> searchPackages(String country, String city, DestinationType type,
                                                        Double minPrice, Double maxPrice, LocalDate travelDate,
                                                        Boolean includesHotel, Boolean includesFlight,
@@ -116,8 +113,6 @@ public class DestinationService {
                 .filter(p -> inclusionMatch(p.getInclusionDetails(), includesHotel, includesFlight, includesFood, includesTransport))
                 .map(DestinationMapper::toDTO).toList();
     }
-
-    // ===== BOOKING =====
 
     public DestinationBookingResponseDTO bookPackage(User user, Long packageId, Integer people, LocalDate travelDate) {
         DestinationPackage pkg = getPackage(packageId);
@@ -177,14 +172,106 @@ public class DestinationService {
         bookingRepository.save(booking);
     }
 
-    // ===== PRIVATE HELPERS =====
+    public List<DestinationBookingResponseDTO> getUserBookings(User user) {
+        return bookingRepository.findByUser(user).stream()
+                .map(b -> DestinationBookingResponseDTO.builder()
+                        .id(b.getId())
+                        .packageId(b.getDestinationPackage().getId())
+                        .packageTitle(b.getDestinationPackage().getTitle())
+                        .travelDate(b.getTravelDate())
+                        .numberOfPeople(b.getNumberOfPeople())
+                        .totalPrice(b.getTotalPrice())
+                        .bookingStatus(b.getBookingStatus().name())
+                        .paymentStatus(b.getPaymentStatus().name())
+                        .build())
+                .toList();
+    }
+
+    public List<DestinationBookingResponseDTO> getBookingsForAgent(User agent) {
+        List<Long> packageIds = packageRepository.findByCreatedByAndIsDeletedFalse(agent)
+                .stream().map(DestinationPackage::getId).toList();
+
+        return bookingRepository.findByDestinationPackageIdIn(packageIds).stream()
+                .map(b -> DestinationBookingResponseDTO.builder()
+                        .id(b.getId())
+                        .packageId(b.getDestinationPackage().getId())
+                        .packageTitle(b.getDestinationPackage().getTitle())
+                        .travelDate(b.getTravelDate())
+                        .numberOfPeople(b.getNumberOfPeople())
+                        .totalPrice(b.getTotalPrice())
+                        .bookingStatus(b.getBookingStatus().name())
+                        .paymentStatus(b.getPaymentStatus().name())
+                        .build())
+                .toList();
+    }
+
+    public List<DestinationBookingResponseDTO> getAllBookings() {
+        return bookingRepository.findAll().stream()
+                .map(b -> DestinationBookingResponseDTO.builder()
+                        .id(b.getId())
+                        .packageId(b.getDestinationPackage().getId())
+                        .packageTitle(b.getDestinationPackage().getTitle())
+                        .travelDate(b.getTravelDate())
+                        .numberOfPeople(b.getNumberOfPeople())
+                        .totalPrice(b.getTotalPrice())
+                        .bookingStatus(b.getBookingStatus().name())
+                        .paymentStatus(b.getPaymentStatus().name())
+                        .build())
+                .toList();
+    }
+
+
+    public ReviewResponseDTO addReview(User user, Long packageId, Integer rating, String comment) {
+        Review review = reviewService.addReview(packageId, rating, comment, user);
+        return ReviewResponseDTO.builder()
+                .id(review.getId())
+                .packageId(review.getReferenceId())
+                .userId(user.getId())
+                .userEmail(user.getEmail())
+                .rating(review.getRating())
+                .comment(review.getComment())
+                .build();
+    }
+
+    public List<ReviewResponseDTO> getReviewsForPackage(Long packageId) {
+        return reviewService.getReviews(packageId).stream()
+                .map(r -> ReviewResponseDTO.builder()
+                        .id(r.getId())
+                        .packageId(r.getReferenceId())
+                        .userId(r.getUser().getId())
+                        .userEmail(r.getUser().getEmail())
+                        .rating(r.getRating())
+                        .comment(r.getComment())
+                        .build())
+                .toList();
+    }
+
+    public List<ReviewResponseDTO> getReviewsForAgent(User agent) {
+        List<Long> packageIds = packageRepository.findByCreatedByAndIsDeletedFalse(agent)
+                .stream().map(DestinationPackage::getId).toList();
+
+        return packageIds.stream()
+                .flatMap(pkgId -> reviewService.getReviews(pkgId).stream())
+                .map(r -> ReviewResponseDTO.builder()
+                        .id(r.getId())
+                        .packageId(r.getReferenceId())
+                        .userId(r.getUser().getId())
+                        .userEmail(r.getUser().getEmail())
+                        .rating(r.getRating())
+                        .comment(r.getComment())
+                        .build())
+                .toList();
+    }
+
 
     private DestinationPackage getPackage(Long id) {
-        return packageRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Package not found"));
+        return packageRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Package not found"));
     }
 
     private DestinationBooking getBooking(Long id) {
-        return bookingRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+        return bookingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
     }
 
     private DestinationPackage getOwnedPackage(Long id, User agent) {
@@ -256,9 +343,9 @@ public class DestinationService {
 
     private boolean inclusionMatch(PackageInclusionDetails d, Boolean h, Boolean f, Boolean food, Boolean t) {
         if(d == null) return false;
-        return (h == null || d.getIncludesHotel().equals(h)) &&
-                (f == null || d.getIncludesFlight().equals(f)) &&
-                (food == null || d.getIncludesFood().equals(food)) &&
-                (t == null || d.getIncludesTransport().equals(t));
+        return (h == null || Objects.equals(d.getIncludesHotel(), h)) &&
+                (f == null || Objects.equals(d.getIncludesFlight(),f)) &&
+                (food == null || Objects.equals(d.getIncludesFood(),food)) &&
+                (t == null ||Objects.equals(d.getIncludesTransport(),t));
     }
 }

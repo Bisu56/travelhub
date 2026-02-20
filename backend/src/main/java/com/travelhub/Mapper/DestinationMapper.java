@@ -36,7 +36,6 @@ public class DestinationMapper {
                 .createdBy(agent)
                 .build();
     }
-
     public static DestinationResponseDTO toDTO(DestinationPackage entity) {
         PackageInclusionDetails inc = entity.getInclusionDetails();
         return DestinationResponseDTO.builder()
@@ -55,7 +54,7 @@ public class DestinationMapper {
                 .maxPeople(entity.getMaxPeople())
                 .ratingAverage(entity.getRatingAverage())
                 .totalReviews(entity.getTotalReviews())
-                .status(entity.getStatus() != null ? entity.getStatus().name() : null)
+                .status(entity.getStatus()) // pass enum directly
                 .imageUrls(entity.getImageUrls())
                 .agentId(entity.getCreatedBy() != null ? entity.getCreatedBy().getId() : null)
                 .agentEmail(entity.getCreatedBy() != null ? entity.getCreatedBy().getEmail() : null)

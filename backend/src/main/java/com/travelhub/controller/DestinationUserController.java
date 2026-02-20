@@ -8,6 +8,7 @@ import com.travelhub.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -45,25 +46,27 @@ public class DestinationUserController {
     @PostMapping("/{packageId}/book")
     public ResponseEntity<DestinationBookingResponseDTO> book(
             @PathVariable Long packageId,
-            @RequestBody BookingRequest request
+            @RequestBody BookingRequest request,
+            Authentication auth
     ) {
-        User user = userService.getCurrentUser();
+        User user = userService.getCurrentUser(auth);
         return ResponseEntity.ok(destinationService.bookPackage(user, packageId,
                 request.getPeople(), request.getTravelDate()));
     }
 
     // 3️⃣ Cancel booking
     @PostMapping("/booking/{bookingId}/cancel")
-    public ResponseEntity<Void> cancelBooking(@PathVariable Long bookingId) {
-        User user = userService.getCurrentUser();
+    public ResponseEntity<Void> cancelBooking(@PathVariable Long bookingId,
+                                              Authentication auth) {
+        User user = userService.getCurrentUser(auth);
         destinationService.cancelBooking(user, bookingId);
         return ResponseEntity.ok().build();
     }
 
     // 4️⃣ Get previous bookings
     @GetMapping("/bookings")
-    public ResponseEntity<List<DestinationBookingResponseDTO>> myBookings() {
-        User user = userService.getCurrentUser();
+    public ResponseEntity<List<DestinationBookingResponseDTO>> myBookings(Authentication auth) {
+        User user = userService.getCurrentUser(auth);
         return ResponseEntity.ok(destinationService.getUserBookings(user));
     }
 
@@ -71,9 +74,10 @@ public class DestinationUserController {
     @PostMapping("/{packageId}/review")
     public ResponseEntity<ReviewResponseDTO> review(
             @PathVariable Long packageId,
-            @RequestBody ReviewRequest request
+            @RequestBody ReviewRequest request,
+            Authentication auth
     ) {
-        User user = userService.getCurrentUser();
+        User user = userService.getCurrentUser(auth);
         return ResponseEntity.ok(destinationService.addReview(user, packageId,
                 request.getRating(), request.getComment()));
     }
