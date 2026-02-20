@@ -5,10 +5,13 @@ import com.travelhub.Dtos.DestinationResponseDTO;
 import com.travelhub.Mapper.DestinationMapper;
 import com.travelhub.entity.User;
 import com.travelhub.service.DestinationAdminService;
+import com.travelhub.service.DestinationBookingService;
 import com.travelhub.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,25 +21,26 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/admin/destinations")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class DestinationAdminController {
 
     private final DestinationAdminService service;
     private final UserService userService;
+    private final DestinationBookingService bookingService;
+
+    public record RejectionRequest(String reason) {}
 
     @PutMapping("/{id}")
     public ResponseEntity<DestinationResponseDTO> edit(
             @PathVariable Long id,
-            @RequestBody DestinationRequestDTO request,
+            @Valid @RequestBody DestinationRequestDTO request,
             Authentication auth,
             HttpServletRequest httpRequest
     ) {
         User admin = userService.getCurrentUser(auth);
         String ip = httpRequest.getRemoteAddr();
-
         return ResponseEntity.ok(
-                DestinationMapper.toDTO(
-                        service.edit(id, request, admin, ip)
-                )
+                DestinationMapper.toDTO(service.edit(id, request, admin, ip))
         );
     }
 
@@ -48,28 +52,22 @@ public class DestinationAdminController {
     ) {
         User admin = userService.getCurrentUser(auth);
         String ip = httpRequest.getRemoteAddr();
-
         return ResponseEntity.ok(
-                DestinationMapper.toDTO(
-                        service.approve(id, admin, ip)
-                )
+                DestinationMapper.toDTO(service.approve(id, admin, ip))
         );
     }
 
     @PostMapping("/{id}/reject")
     public ResponseEntity<DestinationResponseDTO> reject(
             @PathVariable Long id,
-            @RequestParam String reason,
+            @RequestBody RejectionRequest request,
             Authentication auth,
             HttpServletRequest httpRequest
     ) {
         User admin = userService.getCurrentUser(auth);
         String ip = httpRequest.getRemoteAddr();
-
         return ResponseEntity.ok(
-                DestinationMapper.toDTO(
-                        service.reject(id, reason, admin, ip)
-                )
+                DestinationMapper.toDTO(service.reject(id, request.reason(), admin, ip))
         );
     }
 
@@ -81,11 +79,8 @@ public class DestinationAdminController {
     ) {
         User admin = userService.getCurrentUser(auth);
         String ip = httpRequest.getRemoteAddr();
-
         return ResponseEntity.ok(
-                DestinationMapper.toDTO(
-                        service.publish(id, admin, ip)
-                )
+                DestinationMapper.toDTO(service.publish(id, admin, ip))
         );
     }
 
@@ -98,13 +93,19 @@ public class DestinationAdminController {
         return ResponseEntity.ok(list);
     }
 
-    @PostMapping("/booking/{bookingId}/complete")
-    public ResponseEntity<String> completeBooking(
-            @PathVariable Long bookingId,
-            Authentication auth
-    ) {
+    @PostMapping("/booking/{bookingId}/confirm")
+    public ResponseEntity<?> confirmBooking(@PathVariable Long bookingId,
+                                            Authentication auth) {
         User admin = userService.getCurrentUser(auth);
-        service.markBookingCompleted(bookingId, admin);
-        return ResponseEntity.ok("Booking marked as COMPLETED and user notified.");
+        bookingService.confirmBooking(bookingId, admin);
+        return ResponseEntity.ok().body("{\"message\":\"Booking confirmed\"}");
+    }
+
+    @PostMapping("/booking/{bookingId}/complete")
+    public ResponseEntity<?> completeBooking(@PathVariable Long bookingId,
+                                             Authentication auth) {
+        User admin = userService.getCurrentUser(auth);
+        bookingService.completeBooking(bookingId, admin);
+        return ResponseEntity.ok().body("{\"message\":\"Booking completed\"}");
     }
 }

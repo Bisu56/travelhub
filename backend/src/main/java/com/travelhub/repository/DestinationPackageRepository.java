@@ -19,4 +19,5 @@ public interface DestinationPackageRepository extends JpaRepository<DestinationP
     List<DestinationPackage> findByCountryAndTypeAndStatusAndAvailableFromLessThanEqualAndAvailableToGreaterThanEqual(
             String country, DestinationType type, PackageStatus status, LocalDate from, LocalDate to
     );
+    List<DestinationPackage> findByStatusAndIsDeletedFalse(PackageStatus status);
 }

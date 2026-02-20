@@ -6,6 +6,10 @@ import com.travelhub.entity.User;
 import com.travelhub.entity.enums.BookingStatus;
 import com.travelhub.entity.enums.PackageStatus;
 import com.travelhub.entity.enums.PaymentStatus;
+import com.travelhub.entity.enums.Role;
+import com.travelhub.exception.BadRequestException;
+import com.travelhub.exception.ForbiddenException;
+import com.travelhub.exception.ResourceNotFoundException;
 import com.travelhub.repository.DestinationBookingRepository;
 import com.travelhub.repository.DestinationPackageRepository;
 import jakarta.transaction.Transactional;
@@ -14,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -23,41 +28,30 @@ public class DestinationBookingService {
     private final DestinationPackageRepository packageRepository;
     private final DestinationBookingRepository bookingRepository;
 
-    /**
-     * Book a destination package with dynamic pricing.
-     *
-     * @param packageId  - Package to book
-     * @param people     - Number of travelers
-     * @param travelDate - Date of travel
-     * @param user       - Booking user
-     * @return DestinationBooking - saved booking
-     */
+
     public DestinationBooking book(Long packageId,
                                    Integer people,
                                    LocalDate travelDate,
                                    User user) {
 
         DestinationPackage pkg = packageRepository.findById(packageId)
-                .orElseThrow(() -> new RuntimeException("Package not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Package not found"));
 
         if (pkg.getStatus() != PackageStatus.PUBLISHED)
-            throw new RuntimeException("Package is not available for booking");
-
-        if (pkg.getAvailableFrom() == null || pkg.getAvailableTo() == null)
-            throw new RuntimeException("Package availability dates not configured");
-
-        if (travelDate.isBefore(pkg.getAvailableFrom()) || travelDate.isAfter(pkg.getAvailableTo()))
-            throw new RuntimeException("Travel date is outside available range");
+            throw new BadRequestException("Package not available for booking");
 
         if (travelDate.isBefore(LocalDate.now()))
-            throw new RuntimeException("Cannot book for past dates");
+            throw new BadRequestException("Cannot book past dates");
+
+        if (travelDate.isBefore(pkg.getAvailableFrom()) ||
+                travelDate.isAfter(pkg.getAvailableTo()))
+            throw new BadRequestException("Travel date outside availability");
 
         if (people > pkg.getMaxPeople())
-            throw new RuntimeException("Exceeds maximum allowed people for this package");
+            throw new BadRequestException("Exceeds maximum allowed people");
 
-        BigDecimal pricePerPerson = calculatePricePerPerson(pkg);
-
-        BigDecimal totalPrice = pricePerPerson.multiply(BigDecimal.valueOf(people));
+        BigDecimal totalPrice = pkg.getFinalPrice()
+                .multiply(BigDecimal.valueOf(people));
 
         DestinationBooking booking = DestinationBooking.builder()
                 .user(user)
@@ -72,59 +66,71 @@ public class DestinationBookingService {
         return bookingRepository.save(booking);
     }
 
-    /**
-     * Cancel a booking.
-     *
-     * @param bookingId - Booking to cancel
-     * @param user      - Booking user
-     */
+
     public void cancel(Long bookingId, User user) {
-        DestinationBooking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        DestinationBooking booking = getBooking(bookingId);
 
         if (!booking.getUser().getId().equals(user.getId()))
-            throw new RuntimeException("Unauthorized to cancel this booking");
+            throw new ForbiddenException("Not your booking");
 
-        if (booking.getBookingStatus() == BookingStatus.CANCELLED)
-            throw new RuntimeException("Booking already cancelled");
+        if (booking.getBookingStatus() == BookingStatus.COMPLETED)
+            throw new BadRequestException("Completed booking cannot be cancelled");
 
         booking.setBookingStatus(BookingStatus.CANCELLED);
         bookingRepository.save(booking);
     }
 
-    /**
-     * Calculate dynamic price per person based on package base price and inclusions.
-     *
-     * @param pkg - Destination package
-     * @return BigDecimal - final price per person
-     */
-    private BigDecimal calculatePricePerPerson(DestinationPackage pkg) {
-        BigDecimal total = pkg.getBasePrice() != null ? pkg.getBasePrice() : BigDecimal.ZERO;
 
-        if (pkg.getInclusionDetails() != null) {
-            if (Boolean.TRUE.equals(pkg.getInclusionDetails().getIncludesHotel()))
-                total = total.add(nullSafe(pkg.getInclusionDetails().getHotelCost()));
+    public void confirmBooking(Long bookingId, User actor) {
 
-            if (Boolean.TRUE.equals(pkg.getInclusionDetails().getIncludesFlight()))
-                total = total.add(nullSafe(pkg.getInclusionDetails().getFlightCost()));
+        DestinationBooking booking = getBooking(bookingId);
 
-            if (Boolean.TRUE.equals(pkg.getInclusionDetails().getIncludesFood()))
-                total = total.add(nullSafe(pkg.getInclusionDetails().getFoodCost()));
+        if (booking.getBookingStatus() != BookingStatus.PENDING)
+            throw new BadRequestException("Only PENDING bookings can be confirmed");
 
-            if (Boolean.TRUE.equals(pkg.getInclusionDetails().getIncludesTransport()))
-                total = total.add(nullSafe(pkg.getInclusionDetails().getTransportCost()));
-        }
+        boolean isAdmin = actor.getRole() == Role.ADMIN;
 
-        if (pkg.getDiscountPercentage() != null && pkg.getDiscountPercentage().compareTo(BigDecimal.ZERO) > 0) {
-            BigDecimal discount = total.multiply(pkg.getDiscountPercentage())
-                    .divide(BigDecimal.valueOf(100));
-            total = total.subtract(discount);
-        }
+        boolean isAgent = actor.getRole() == Role.AGENT &&
+                booking.getDestinationPackage().getCreatedBy()
+                        .getId().equals(actor.getId());
 
-        return total;
+        if (!isAdmin && !isAgent)
+            throw new ForbiddenException("Unauthorized to confirm");
+
+        booking.setBookingStatus(BookingStatus.CONFIRMED);
+        bookingRepository.save(booking);
     }
 
-    private BigDecimal nullSafe(BigDecimal value) {
-        return value != null ? value : BigDecimal.ZERO;
+
+    public void completeBooking(Long bookingId, User actor) {
+
+        DestinationBooking booking = getBooking(bookingId);
+
+        if (booking.getBookingStatus() != BookingStatus.CONFIRMED)
+            throw new BadRequestException("Only CONFIRMED bookings can be completed");
+
+        boolean isAdmin = actor.getRole() == Role.ADMIN;
+
+        boolean isAgent = actor.getRole() == Role.AGENT &&
+                booking.getDestinationPackage().getCreatedBy()
+                        .getId().equals(actor.getId());
+
+        if (!isAdmin && !isAgent)
+            throw new ForbiddenException("Unauthorized to complete");
+
+        booking.setBookingStatus(BookingStatus.COMPLETED);
+        bookingRepository.save(booking);
+    }
+
+
+    public List<DestinationBooking> getUserBookings(User user) {
+        return bookingRepository.findByUser(user);
+    }
+
+
+    private DestinationBooking getBooking(Long id) {
+        return bookingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
     }
 }

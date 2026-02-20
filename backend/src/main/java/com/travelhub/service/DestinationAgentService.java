@@ -6,6 +6,7 @@ import com.travelhub.entity.User;
 import com.travelhub.entity.enums.PackageStatus;
 import com.travelhub.repository.DestinationPackageRepository;
 import com.travelhub.Mapper.DestinationMapper;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class DestinationAgentService {
 
     private final DestinationPackageRepository repository;

@@ -4,29 +4,33 @@ import com.travelhub.Dtos.DestinationRequestDTO;
 import com.travelhub.Dtos.DestinationResponseDTO;
 import com.travelhub.Mapper.DestinationMapper;
 import com.travelhub.entity.User;
+import com.travelhub.repository.DestinationBookingRepository;
 import com.travelhub.service.DestinationAdminService;
 import com.travelhub.service.DestinationAgentService;
+import com.travelhub.service.DestinationBookingService;
 import com.travelhub.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/agent/destinations")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('AGENT')")
 public class DestinationAgentController {
 
     private final DestinationAgentService agentService;
-    private final DestinationAdminService adminService; // for booking completion
+    private final DestinationBookingService bookingService; // For marking booking complete
     private final UserService userService;
 
     @PostMapping
     public ResponseEntity<DestinationResponseDTO> create(
-            @RequestBody DestinationRequestDTO request,
+            @Valid @RequestBody DestinationRequestDTO request,
             Authentication auth
     ) {
         User agent = userService.getCurrentUser(auth);
@@ -38,7 +42,7 @@ public class DestinationAgentController {
     @PutMapping("/{id}")
     public ResponseEntity<DestinationResponseDTO> update(
             @PathVariable Long id,
-            @RequestBody DestinationRequestDTO request,
+            @Valid @RequestBody DestinationRequestDTO request,
             Authentication auth
     ) {
         User agent = userService.getCurrentUser(auth);
@@ -64,17 +68,24 @@ public class DestinationAgentController {
         List<DestinationResponseDTO> list = agentService.getAgentPackages(agent)
                 .stream()
                 .map(DestinationMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(list);
+    }
+    @PostMapping("/booking/{bookingId}/confirm")
+    public ResponseEntity<?> confirmBooking(@PathVariable Long bookingId,
+                                            Authentication auth) {
+        User agent = userService.getCurrentUser(auth);
+        bookingService.confirmBooking(bookingId, agent);
+        return ResponseEntity.ok().body("{\"message\":\"Booking confirmed\"}");
     }
 
     @PostMapping("/booking/{bookingId}/complete")
-    public ResponseEntity<String> completeBooking(
+    public ResponseEntity<?> completeBooking(
             @PathVariable Long bookingId,
             Authentication auth
     ) {
         User agent = userService.getCurrentUser(auth);
-        adminService.markBookingCompleted(bookingId, agent);
-        return ResponseEntity.ok("Booking marked as COMPLETED and user notified.");
+        bookingService.completeBooking(bookingId, agent);
+        return ResponseEntity.ok().body("{\"message\":\"Booking marked as COMPLETED and user notified.\"}");
     }
 }
