@@ -7,6 +7,7 @@ import Home from '../pages/Home';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Packages from '../pages/Packages';
+import PackageDetail from '../pages/public/PackageDetail';
 import Flights from '../pages/Flights';
 import Hotels from '../pages/Hotels';
 import Cars from '../pages/Cars';
@@ -36,6 +37,7 @@ function AppRoutes() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/packages" element={<Packages />} />
+          <Route path="/packages/:id" element={<PackageDetail />} />
           <Route path="/flights" element={<Flights />} />
           <Route path="/hotels" element={<Hotels />} />
           <Route path="/cars" element={<Cars />} />
