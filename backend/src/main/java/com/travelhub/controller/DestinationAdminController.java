@@ -98,6 +98,6 @@ public class DestinationAdminController {
     ) {
         User admin = userService.getCurrentUser(auth);
         service.markBookingCompleted(bookingId, admin);
-        return ResponseEntity.ok().body("{\"message\":\"Booking marked as COMPLETED and user notified.\"}");
+        return ResponseEntity.ok().body("{\"message\":\"Booking marked as APPROVED and user notified.\"}");
     }
 }
