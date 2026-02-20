@@ -12,12 +12,14 @@ const SearchBar = ({ setFilters }) => {
   }, [value]);
 
   return (
-    <input
-      type="text"
-      placeholder="Search packages..."
-      className="border p-2 w-full mb-4 rounded"
-      onChange={e => setValue(e.target.value)}
-    />
+    <div className="mb-6">
+      <input
+        type="text"
+        placeholder="Search packages..."
+        className="w-full border-2 border-cyan-200 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 rounded-xl px-4 py-3 outline-none transition-all"
+        onChange={e => setValue(e.target.value)}
+      />
+    </div>
   );
 };
 
