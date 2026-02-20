@@ -1,5 +1,7 @@
 package com.travelhub.controller;
 
+import com.travelhub.Dtos.DestinationResponseDTO;
+import com.travelhub.Mapper.DestinationMapper;
 import com.travelhub.entity.DestinationBooking;
 import com.travelhub.entity.DestinationPackage;
 import com.travelhub.entity.Review;
@@ -23,6 +25,8 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
+import static java.util.Arrays.stream;
+
 @RestController
 @RequestMapping("/api/user/destinations")
 @RequiredArgsConstructor
@@ -45,7 +49,7 @@ public class DestinationUserController {
     ) {}
 
     @GetMapping("/search")
-    public ResponseEntity<List<DestinationPackage>> search(
+    public ResponseEntity<List<DestinationResponseDTO>> search(
             @RequestParam(required = false) String country,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) DestinationType type,
@@ -57,10 +61,16 @@ public class DestinationUserController {
             @RequestParam(required = false) Boolean includesFood,
             @RequestParam(required = false) Boolean includesTransport
     ) {
-        List<DestinationPackage> results = searchService.search(
-                country, city, type, minPrice, maxPrice, travelDate,
-                includesHotel, includesFlight, includesFood, includesTransport
-        );
+
+        List<DestinationResponseDTO> results =
+                searchService.search(
+                                country, city, type, minPrice, maxPrice, travelDate,
+                                includesHotel, includesFlight, includesFood, includesTransport
+                        )
+                        .stream()
+                        .map(DestinationMapper::toDTO)
+                        .toList();
+
         return ResponseEntity.ok(results);
     }
 
@@ -80,6 +90,11 @@ public class DestinationUserController {
         User user = userService.getCurrentUser(auth);
         bookingService.cancel(bookingId, user);
         return ResponseEntity.ok().body("{\"message\":\"Booking cancelled\"}");
+    }
+    @GetMapping("/bookings")
+    public ResponseEntity<List<DestinationBooking>> myBookings(Authentication auth) {
+        User user = userService.getCurrentUser(auth);
+        return ResponseEntity.ok(bookingService.getUserBookings(user));
     }
 
     @PostMapping("/{packageId}/review")

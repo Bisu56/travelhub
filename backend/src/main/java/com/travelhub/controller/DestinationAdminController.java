@@ -5,6 +5,7 @@ import com.travelhub.Dtos.DestinationResponseDTO;
 import com.travelhub.Mapper.DestinationMapper;
 import com.travelhub.entity.User;
 import com.travelhub.service.DestinationAdminService;
+import com.travelhub.service.DestinationBookingService;
 import com.travelhub.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -25,6 +26,7 @@ public class DestinationAdminController {
 
     private final DestinationAdminService service;
     private final UserService userService;
+    private final DestinationBookingService bookingService;
 
     public record RejectionRequest(String reason) {}
 
@@ -91,13 +93,19 @@ public class DestinationAdminController {
         return ResponseEntity.ok(list);
     }
 
-    @PostMapping("/booking/{bookingId}/complete")
-    public ResponseEntity<?> completeBooking(
-            @PathVariable Long bookingId,
-            Authentication auth
-    ) {
+    @PostMapping("/booking/{bookingId}/confirm")
+    public ResponseEntity<?> confirmBooking(@PathVariable Long bookingId,
+                                            Authentication auth) {
         User admin = userService.getCurrentUser(auth);
-        service.markBookingCompleted(bookingId, admin);
-        return ResponseEntity.ok().body("{\"message\":\"Booking marked as APPROVED and user notified.\"}");
+        bookingService.confirmBooking(bookingId, admin);
+        return ResponseEntity.ok().body("{\"message\":\"Booking confirmed\"}");
+    }
+
+    @PostMapping("/booking/{bookingId}/complete")
+    public ResponseEntity<?> completeBooking(@PathVariable Long bookingId,
+                                             Authentication auth) {
+        User admin = userService.getCurrentUser(auth);
+        bookingService.completeBooking(bookingId, admin);
+        return ResponseEntity.ok().body("{\"message\":\"Booking completed\"}");
     }
 }

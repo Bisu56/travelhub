@@ -4,8 +4,10 @@ import com.travelhub.Dtos.DestinationRequestDTO;
 import com.travelhub.Dtos.DestinationResponseDTO;
 import com.travelhub.Mapper.DestinationMapper;
 import com.travelhub.entity.User;
+import com.travelhub.repository.DestinationBookingRepository;
 import com.travelhub.service.DestinationAdminService;
 import com.travelhub.service.DestinationAgentService;
+import com.travelhub.service.DestinationBookingService;
 import com.travelhub.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +25,7 @@ import java.util.List;
 public class DestinationAgentController {
 
     private final DestinationAgentService agentService;
-    private final DestinationAdminService adminService; // For marking booking complete
+    private final DestinationBookingService bookingService; // For marking booking complete
     private final UserService userService;
 
     @PostMapping
@@ -69,6 +71,13 @@ public class DestinationAgentController {
                 .toList();
         return ResponseEntity.ok(list);
     }
+    @PostMapping("/booking/{bookingId}/confirm")
+    public ResponseEntity<?> confirmBooking(@PathVariable Long bookingId,
+                                            Authentication auth) {
+        User agent = userService.getCurrentUser(auth);
+        bookingService.confirmBooking(bookingId, agent);
+        return ResponseEntity.ok().body("{\"message\":\"Booking confirmed\"}");
+    }
 
     @PostMapping("/booking/{bookingId}/complete")
     public ResponseEntity<?> completeBooking(
@@ -76,7 +85,7 @@ public class DestinationAgentController {
             Authentication auth
     ) {
         User agent = userService.getCurrentUser(auth);
-        adminService.markBookingCompleted(bookingId, agent);
+        bookingService.completeBooking(bookingId, agent);
         return ResponseEntity.ok().body("{\"message\":\"Booking marked as COMPLETED and user notified.\"}");
     }
 }
