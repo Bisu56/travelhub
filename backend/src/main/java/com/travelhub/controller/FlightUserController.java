@@ -48,7 +48,6 @@ public class FlightUserController {
 
         User user = userService.getCurrentUser(auth);
 
-        // Pass entire FlightBookingRequest
         return ResponseEntity.ok(flightService.bookFlight(user, flightId, request));
     }
 
