@@ -1,30 +1,30 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import StripeCheckoutForm from "../../components/payments/StripeCheckoutForm";
 import KhaltiButton from "../../components/payments/KhaltiButton";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 
 const PaymentMethodPage = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const [testId] = useState(() => `TEST-${Date.now()}`);
 
   const { bookingId, amount } = useMemo(() => {
     if (state) {
       return {
         bookingId: state.bookingId || "",
-        amount: state.amount || 0,
-      };
-    } else {
-      const params = new URLSearchParams(window.location.search);
-      return {
-        bookingId: params.get("bookingId") || "TEST-" + Date.now(),
-        amount: params.get("amount") || 100,
+        amount: state.amount || 100
       };
     }
-  }, [state]);
+    const params = new URLSearchParams(window.location.search);
+    return {
+      bookingId: params.get("bookingId") || testId,
+      amount: parseFloat(params.get("amount")) || 100
+    };
+  }, [state, testId]);
 
-  const handleMockPayment = (method) => {
+  const handleMockPayment = () => {
     localStorage.setItem("lastBooking", bookingId);
-    localStorage.setItem("paymentMethod", method);
+    localStorage.setItem("paymentMethod", "mock");
     localStorage.setItem("paymentAmount", amount);
     navigate("/payment-success");
   };
@@ -67,9 +67,7 @@ const PaymentMethodPage = () => {
           border: "2px solid #e0e0e0", 
           borderRadius: "10px", 
           padding: "15px",
-          marginBottom: "10px",
-          cursor: "pointer",
-          transition: "all 0.3s"
+          marginBottom: "10px"
         }}>
           <StripeCheckoutForm bookingId={bookingId} amount={amount} />
         </div>
@@ -78,9 +76,7 @@ const PaymentMethodPage = () => {
           border: "2px solid #e0e0e0", 
           borderRadius: "10px", 
           padding: "15px",
-          marginBottom: "10px",
-          cursor: "pointer",
-          transition: "all 0.3s"
+          marginBottom: "10px"
         }}>
           <KhaltiButton bookingId={bookingId} amount={amount} />
         </div>
@@ -89,14 +85,12 @@ const PaymentMethodPage = () => {
           border: "2px solid #e0e0e0", 
           borderRadius: "10px", 
           padding: "15px",
-          marginBottom: "10px",
-          cursor: "pointer",
-          transition: "all 0.3s"
+          marginBottom: "10px"
         }}>
-          <h4>💳 Mock Payment (Testing)</h4>
-          <p style={{ color: "#666", fontSize: "14px" }}>Simulate payment for testing purposes</p>
+          <h4>Mock Payment (Testing)</h4>
+          <p style={{ color: "#666", fontSize: "14px" }}>Simulate payment for testing</p>
           <button 
-            onClick={() => handleMockPayment("mock")}
+            onClick={handleMockPayment}
             style={{
               background: "#28a745",
               color: "white",
@@ -123,7 +117,7 @@ const PaymentMethodPage = () => {
         <span>🔒</span>
         <div>
           <p style={{ margin: 0, fontWeight: "bold" }}>Secure SSL Encrypted Payment</p>
-          <p style={{ margin: 0, fontSize: "12px", color: "#666" }}>Your payment information is secure</p>
+          <p style={{ margin: 0, fontSize: "12px", color: "#666" }}>Your payment is secure</p>
         </div>
       </div>
 
