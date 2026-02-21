@@ -7,14 +7,14 @@ public class VehicleMapper {
 
     public static VehicleOffering toEntity(VehicleRequestDTO dto, User agent) {
         return VehicleOffering.builder()
-                .createdBy(agent)
                 .vehicleType(dto.getVehicleType())
-                .description(dto.getDescription())
                 .location(dto.getLocation())
+                .description(dto.getDescription())
+                .totalSeats(dto.getTotalSeats())
                 .pricePerSeat(dto.getPricePerSeat())
                 .fullVehiclePricePerDay(dto.getFullVehiclePricePerDay())
-                .totalSeats(dto.getTotalSeats())
-                .availableSeats(dto.getTotalSeats())
+                .createdBy(agent)
+                .approvalStatus(com.travelhub.entity.enums.PackageStatus.DRAFT)
                 .active(true)
                 .build();
     }
@@ -23,18 +23,16 @@ public class VehicleMapper {
         return VehicleResponseDTO.builder()
                 .id(vehicle.getId())
                 .vehicleType(vehicle.getVehicleType())
-                .description(vehicle.getDescription())
                 .location(vehicle.getLocation())
+                .description(vehicle.getDescription())
+                .totalSeats(vehicle.getTotalSeats())
                 .pricePerSeat(vehicle.getPricePerSeat())
                 .fullVehiclePricePerDay(vehicle.getFullVehiclePricePerDay())
-                .totalSeats(vehicle.getTotalSeats())
-                .availableSeats(vehicle.getAvailableSeats())
                 .approvalStatus(vehicle.getApprovalStatus())
-                .rejectionReason(vehicle.getRejectionReason())
-                .active(vehicle.getActive())
                 .createdByEmail(vehicle.getCreatedBy() != null ? vehicle.getCreatedBy().getEmail() : null)
                 .approvedByEmail(vehicle.getApprovedBy() != null ? vehicle.getApprovedBy().getEmail() : null)
                 .approvedAt(vehicle.getApprovedAt())
+                .rejectionReason(vehicle.getRejectionReason())
                 .build();
     }
 
@@ -43,15 +41,12 @@ public class VehicleMapper {
                 .id(booking.getId())
                 .vehicleId(booking.getVehicle().getId())
                 .vehicleType(booking.getVehicle().getVehicleType())
-                .userId(booking.getUser().getId())
-                .userEmail(booking.getUser().getEmail())
                 .seatCount(booking.getSeatCount())
-                .fullVehicle(booking.getFullVehicle())
                 .days(booking.getDays())
+                .fullVehicle(booking.getFullVehicle())
                 .totalPrice(booking.getTotalPrice())
                 .bookingStatus(booking.getBookingStatus())
                 .paymentStatus(booking.getPaymentStatus())
-                .rejectionReason(booking.getRejectionReason())
                 .build();
     }
 }

@@ -1,17 +1,31 @@
 package com.travelhub.Dtos;
-import lombok.*;
 
+import jakarta.validation.constraints.*;
+import lombok.*;
 import java.math.BigDecimal;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class VehicleRequestDTO {
+
+    @NotBlank
     private String vehicleType;
-    private String description;
+
+    @NotBlank
     private String location;
-    private BigDecimal pricePerSeat;
-    private BigDecimal fullVehiclePricePerDay;
+
+    private String description;
+
+    @NotNull
+    @Min(1)
     private Integer totalSeats;
+
+    @NotNull
+    @DecimalMin("0.0")
+    private BigDecimal pricePerSeat;
+
+    @NotNull
+    @DecimalMin("0.0")
+    private BigDecimal fullVehiclePricePerDay;
 }

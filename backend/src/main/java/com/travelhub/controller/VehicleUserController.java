@@ -32,7 +32,8 @@ public class VehicleUserController {
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice
     ) {
-        return ResponseEntity.ok(vehicleService.searchVehicles(location, startDate, endDate, minPrice, maxPrice));
+        List<VehicleResponseDTO> vehicles = vehicleService.searchVehicles(location, startDate, endDate, minPrice, maxPrice);
+        return ResponseEntity.ok(vehicles);
     }
 
     @PostMapping("/{vehicleId}/book")

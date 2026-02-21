@@ -1,4 +1,5 @@
 package com.travelhub.service;
+
 import com.travelhub.Dtos.*;
 import com.travelhub.Mapper.VehicleMapper;
 import com.travelhub.entity.*;
@@ -13,41 +14,47 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class VehicleService {
 
-    private final VehicleRepository vehicleRepository;
+    private final VehicleOfferingRepository vehicleRepository;
     private final VehicleBookingRepository bookingRepository;
     private final ReviewService reviewService;
     private final AuditService auditService;
 
     public VehicleResponseDTO createVehicle(User agent, VehicleRequestDTO dto) {
-        if (agent.getRole() != Role.AGENT)
-            throw new ForbiddenException("Only agents allowed");
-
+        validateAgent(agent);
         validateVehicle(dto);
 
         VehicleOffering vehicle = VehicleMapper.toEntity(dto, agent);
         vehicle.setApprovalStatus(PackageStatus.DRAFT);
-        vehicleRepository.save(vehicle);
 
+        vehicleRepository.save(vehicle);
         return VehicleMapper.toDTO(vehicle);
     }
 
     public VehicleResponseDTO updateVehicle(User agent, Long id, VehicleRequestDTO dto) {
-        VehicleOffering vehicle = getOwnedVehicle(agent, id);
+        validateAgent(agent);
         validateVehicle(dto);
+
+        VehicleOffering vehicle = getOwnedVehicle(agent, id);
 
         vehicle.setVehicleType(dto.getVehicleType());
         vehicle.setDescription(dto.getDescription());
         vehicle.setLocation(dto.getLocation());
+        vehicle.setTotalSeats(dto.getTotalSeats());
         vehicle.setPricePerSeat(dto.getPricePerSeat());
         vehicle.setFullVehiclePricePerDay(dto.getFullVehiclePricePerDay());
-        vehicle.setTotalSeats(dto.getTotalSeats());
-        vehicle.setAvailableSeats(dto.getTotalSeats());
+
+        if (vehicle.getApprovalStatus() == PackageStatus.PUBLISHED) {
+            vehicle.setApprovalStatus(PackageStatus.SUBMITTED);
+        } else {
+            vehicle.setApprovalStatus(PackageStatus.DRAFT);
+        }
 
         vehicleRepository.save(vehicle);
         return VehicleMapper.toDTO(vehicle);
@@ -66,10 +73,9 @@ public class VehicleService {
         if (vehicle.getApprovalStatus() != PackageStatus.SUBMITTED)
             throw new BadRequestException("Only SUBMITTED vehicles can be approved");
 
-        vehicle.setApprovalStatus(PackageStatus.APPROVED);
+        vehicle.setApprovalStatus(PackageStatus.PUBLISHED);
         vehicle.setApprovedBy(admin);
         vehicle.setApprovedAt(Instant.now());
-        vehicle.setRejectionReason(null);
         vehicleRepository.save(vehicle);
 
         auditService.log(admin.getEmail(), "APPROVED VEHICLE " + id, ip);
@@ -84,24 +90,9 @@ public class VehicleService {
 
         vehicle.setApprovalStatus(PackageStatus.REJECTED);
         vehicle.setRejectionReason(reason);
-        vehicle.setApprovedBy(null);
-        vehicle.setApprovedAt(null);
         vehicleRepository.save(vehicle);
 
         auditService.log(admin.getEmail(), "REJECTED VEHICLE " + id, ip);
-        return VehicleMapper.toDTO(vehicle);
-    }
-
-    public VehicleResponseDTO publishVehicle(User admin, Long id, String ip) {
-        checkAdmin(admin);
-        VehicleOffering vehicle = getVehicle(id);
-        if (vehicle.getApprovalStatus() != PackageStatus.APPROVED)
-            throw new BadRequestException("Only APPROVED vehicles can be published");
-
-        vehicle.setApprovalStatus(PackageStatus.PUBLISHED);
-        vehicleRepository.save(vehicle);
-
-        auditService.log(admin.getEmail(), "PUBLISHED VEHICLE " + id, ip);
         return VehicleMapper.toDTO(vehicle);
     }
 
@@ -114,42 +105,34 @@ public class VehicleService {
         auditService.log(admin.getEmail(), "DELETED VEHICLE " + id, ip);
     }
 
-    public void suspendVehicle(User admin, Long id, String ip) {
-        checkAdmin(admin);
-        VehicleOffering vehicle = getVehicle(id);
-        if (vehicle.getApprovalStatus() != PackageStatus.PUBLISHED)
-            throw new BadRequestException("Only PUBLISHED vehicles can be suspended");
-
-        vehicle.setApprovalStatus(PackageStatus.SUSPENDED);
-        vehicleRepository.save(vehicle);
-
-        auditService.log(admin.getEmail(), "SUSPENDED VEHICLE " + id, ip);
+    public List<VehicleResponseDTO> listPendingVehicles() {
+        return vehicleRepository.findByApprovalStatus(PackageStatus.SUBMITTED)
+                .stream()
+                .map(VehicleMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     public List<VehicleResponseDTO> searchVehicles(String location, LocalDate startDate, LocalDate endDate, Double minPrice, Double maxPrice) {
-        return vehicleRepository.findByApprovalStatusAndActiveTrue(PackageStatus.PUBLISHED)
+        return vehicleRepository.findAll()
                 .stream()
+                .filter(VehicleOffering::getActive)
+                .filter(v -> v.getApprovalStatus() == PackageStatus.PUBLISHED)
                 .filter(v -> location == null || v.getLocation().equalsIgnoreCase(location))
-                .filter(v -> minPrice == null || (v.getPricePerSeat() != null && v.getPricePerSeat().doubleValue() >= minPrice))
-                .filter(v -> maxPrice == null || (v.getPricePerSeat() != null && v.getPricePerSeat().doubleValue() <= maxPrice))
+                .filter(v -> minPrice == null || v.getPricePerSeat().doubleValue() >= minPrice || v.getFullVehiclePricePerDay().doubleValue() >= minPrice)
+                .filter(v -> maxPrice == null || v.getPricePerSeat().doubleValue() <= maxPrice || v.getFullVehiclePricePerDay().doubleValue() <= maxPrice)
                 .map(VehicleMapper::toDTO)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public VehicleBookingResponseDTO bookVehicle(User user, Long vehicleId, VehicleBookingRequest request) {
         VehicleOffering vehicle = getVehicle(vehicleId);
+
         if (vehicle.getApprovalStatus() != PackageStatus.PUBLISHED)
             throw new BadRequestException("Vehicle not available");
 
-        BigDecimal totalPrice;
-        if (request.getFullVehicle()) {
-            totalPrice = vehicle.getFullVehiclePricePerDay().multiply(BigDecimal.valueOf(request.getDays()));
-        } else {
-            if (request.getSeats() <= 0 || request.getSeats() > vehicle.getAvailableSeats())
-                throw new BadRequestException("Invalid seat count");
+        validateBookingRequest(vehicle, request);
 
-            totalPrice = vehicle.getPricePerSeat().multiply(BigDecimal.valueOf(request.getSeats()));
-        }
+        BigDecimal totalPrice = calculatePrice(vehicle, request);
 
         VehicleBooking booking = VehicleBooking.builder()
                 .user(user)
@@ -208,6 +191,27 @@ public class VehicleService {
         bookingRepository.save(booking);
     }
 
+    public List<VehicleBookingResponseDTO> getUserBookings(User user) {
+        return bookingRepository.findByUser(user)
+                .stream()
+                .map(VehicleMapper::bookingToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<VehicleBookingResponseDTO> getBookingsForAgent(User agent) {
+        return bookingRepository.findByVehicle_CreatedBy(agent)
+                .stream()
+                .map(VehicleMapper::bookingToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<VehicleBookingResponseDTO> getAllBookings() {
+        return bookingRepository.findAll()
+                .stream()
+                .map(VehicleMapper::bookingToDTO)
+                .collect(Collectors.toList());
+    }
+
     public ReviewResponseDTO addReview(User user, Long vehicleId, Integer rating, String comment) {
         Review review = reviewService.addReview(vehicleId, rating, comment, user);
         return ReviewResponseDTO.builder()
@@ -231,16 +235,14 @@ public class VehicleService {
                         .rating(r.getRating())
                         .comment(r.getComment())
                         .build())
-                .toList();
+                .collect(Collectors.toList());
     }
 
-    private void validateVehicle(VehicleRequestDTO dto) {
-        if (dto.getTotalSeats() == null || dto.getTotalSeats() <= 0)
-            throw new BadRequestException("Total seats must be > 0");
-
-        if ((dto.getPricePerSeat() == null || dto.getPricePerSeat().compareTo(BigDecimal.ZERO) <= 0) &&
-                (dto.getFullVehiclePricePerDay() == null || dto.getFullVehiclePricePerDay().compareTo(BigDecimal.ZERO) <= 0))
-            throw new BadRequestException("Either seat price or full vehicle price must be > 0");
+    public List<VehicleResponseDTO> getVehiclesByAgent(User agent) {
+        return vehicleRepository.findByCreatedBy(agent)
+                .stream()
+                .map(VehicleMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     private VehicleOffering getVehicle(Long id) {
@@ -271,5 +273,39 @@ public class VehicleService {
                 booking.getVehicle().getCreatedBy().getId().equals(actor.getId());
         if (!isAdmin && !isAgent)
             throw new ForbiddenException("Unauthorized");
+    }
+
+    private void validateAgent(User user) {
+        if (user.getRole() != Role.AGENT)
+            throw new ForbiddenException("Agent only");
+    }
+
+    private void validateVehicle(VehicleRequestDTO dto) {
+        if (dto.getTotalSeats() == null || dto.getTotalSeats() <= 0)
+            throw new BadRequestException("Total seats must be > 0");
+        if (dto.getPricePerSeat() == null || dto.getPricePerSeat().compareTo(BigDecimal.ZERO) <= 0)
+            throw new BadRequestException("Price per seat must be > 0");
+        if (dto.getFullVehiclePricePerDay() == null || dto.getFullVehiclePricePerDay().compareTo(BigDecimal.ZERO) <= 0)
+            throw new BadRequestException("Full vehicle price per day must be > 0");
+    }
+
+    private void validateBookingRequest(VehicleOffering vehicle, VehicleBookingRequest request) {
+        if (!request.getFullVehicle()) {
+            if (request.getSeats() == null || request.getSeats() < 1)
+                throw new BadRequestException("Invalid seat count");
+            if (request.getSeats() > vehicle.getTotalSeats())
+                throw new BadRequestException("Seats exceed vehicle capacity");
+        }
+        if (request.getDays() == null || request.getDays() < 1)
+            throw new BadRequestException("Invalid number of days");
+    }
+
+    private BigDecimal calculatePrice(VehicleOffering vehicle, VehicleBookingRequest request) {
+        if (request.getFullVehicle()) {
+            return vehicle.getFullVehiclePricePerDay().multiply(BigDecimal.valueOf(request.getDays()));
+        } else {
+            BigDecimal seatPrice = vehicle.getPricePerSeat().multiply(BigDecimal.valueOf(request.getSeats()));
+            return seatPrice.multiply(BigDecimal.valueOf(request.getDays()));
+        }
     }
 }

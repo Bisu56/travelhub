@@ -54,7 +54,7 @@ public class VehicleAdminController {
             Authentication auth
     ) {
         User admin = userService.getCurrentUser(auth);
-        return ResponseEntity.ok(vehicleService.publishVehicle(admin, vehicleId, ip));
+        return ResponseEntity.ok(vehicleService.approveVehicle(admin, vehicleId, ip));
     }
 
     @PostMapping("/vehicles/{vehicleId}/delete")
@@ -65,17 +65,6 @@ public class VehicleAdminController {
     ) {
         User admin = userService.getCurrentUser(auth);
         vehicleService.deleteVehicle(admin, vehicleId, ip);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/vehicles/{vehicleId}/suspend")
-    public ResponseEntity<Void> suspendVehicle(
-            @PathVariable Long vehicleId,
-            @RequestHeader(value = "X-Forwarded-For", required = false) String ip,
-            Authentication auth
-    ) {
-        User admin = userService.getCurrentUser(auth);
-        vehicleService.suspendVehicle(admin, vehicleId, ip);
         return ResponseEntity.ok().build();
     }
 

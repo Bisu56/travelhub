@@ -1,56 +1,55 @@
 package com.travelhub.entity;
 
 import com.travelhub.entity.enums.PackageStatus;
-import com.travelhub.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 
 @Entity
-@Table(name = "vehicle_offerings")
+@Table(name = "vehicles")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class VehicleOffering extends BaseAuditable {
+public class VehicleOffering {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private User createdBy;
-
     @Column(nullable = false)
-    private String vehicleType; // SUV, Sedan, Bus, etc.
-
-    @Column(nullable = false, length = 500)
-    private String description;
+    private String vehicleType; // Car, Bus, Van, etc.
 
     @Column(nullable = false)
     private String location;
 
-    private BigDecimal pricePerSeat;
-
-    private BigDecimal fullVehiclePricePerDay;
+    @Column(length = 2000)
+    private String description;
 
     @Column(nullable = false)
     private Integer totalSeats;
 
     @Column(nullable = false)
-    private Integer availableSeats;
+    private BigDecimal pricePerSeat;
 
-    @Enumerated(EnumType.STRING)
-    private PackageStatus approvalStatus;
+    @Column(nullable = false)
+    private BigDecimal fullVehiclePricePerDay;
 
-    private String rejectionReason;
-
+    @Column(nullable = false)
     private Boolean active = true;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PackageStatus approvalStatus;
+
+    @ManyToOne
+    private User createdBy;
+
+    @ManyToOne
     private User approvedBy;
 
     private Instant approvedAt;
+
+    private String rejectionReason;
 }

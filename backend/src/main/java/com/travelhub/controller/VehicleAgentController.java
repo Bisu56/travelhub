@@ -57,20 +57,14 @@ public class VehicleAgentController {
     }
 
     @PostMapping("/bookings/{bookingId}/confirm")
-    public ResponseEntity<Void> confirmBooking(
-            @PathVariable Long bookingId,
-            Authentication auth
-    ) {
+    public ResponseEntity<Void> confirmBooking(@PathVariable Long bookingId, Authentication auth) {
         User agent = userService.getCurrentUser(auth);
         vehicleService.confirmBooking(agent, bookingId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/bookings/{bookingId}/complete")
-    public ResponseEntity<Void> completeBooking(
-            @PathVariable Long bookingId,
-            Authentication auth
-    ) {
+    public ResponseEntity<Void> completeBooking(@PathVariable Long bookingId, Authentication auth) {
         User agent = userService.getCurrentUser(auth);
         vehicleService.completeBooking(agent, bookingId);
         return ResponseEntity.ok().build();

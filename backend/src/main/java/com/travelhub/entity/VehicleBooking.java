@@ -4,7 +4,6 @@ import com.travelhub.entity.enums.BookingStatus;
 import com.travelhub.entity.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.math.BigDecimal;
 
 @Entity
@@ -13,30 +12,36 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class VehicleBooking extends BaseAuditable {
+public class VehicleBooking {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    private VehicleOffering vehicle;
-
-    @ManyToOne
     private User user;
 
+    @ManyToOne
+    private VehicleOffering vehicle;
+
+    @Column(nullable = false)
     private Integer seatCount;
 
-    private Boolean fullVehicle; // true if full vehicle booked
+    @Column(nullable = false)
+    private Integer days;
 
-    private Integer days; // duration if full vehicle
+    @Column(nullable = false)
+    private Boolean fullVehicle;
 
+    @Column(nullable = false)
     private BigDecimal totalPrice;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private BookingStatus bookingStatus;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PaymentStatus paymentStatus;
 
     private String rejectionReason;
