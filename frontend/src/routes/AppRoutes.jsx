@@ -17,6 +17,10 @@ import VehicleDetailPage from '../pages/vehicles/VehicleDetailPage';
 import BookingSummaryPage from '../pages/BookingSummaryPage';
 import MyBookingsPage from '../pages/bookings/MyBookingsPage';
 import Hotels from '../pages/Hotels';
+import PaymentMethodPage from "../pages/payments/PaymentMethodPage";
+import PaymentSuccessPage from "../pages/payments/PaymentSuccessPage";
+import PaymentFailurePage from "../pages/payments/PaymentFailurePage";
+import PaymentHistoryPage from "../pages/payments/PaymentHistoryPage";
 
 // Admin layout, guard & pages
 import PermissionGuard from '../hoc/PermissionGuard';
@@ -52,6 +56,10 @@ function AppRoutes() {
           <Route path="/vehicles/:id" element={<VehicleDetailPage />} />
           <Route path="/booking/summary" element={<BookingSummaryPage />} />
           <Route path="/my-bookings" element={<MyBookingsPage />} />
+          <Route path="/payment-method" element={<PaymentMethodPage />} />
+          <Route path="/payment-success" element={<PaymentSuccessPage />} />
+          <Route path="/payment-failure" element={<PaymentFailurePage />} />
+          <Route path="/payment-history" element={<PaymentHistoryPage />} />
         </Route>
 
         {/* ── ADMIN ROUTES (temporarily public) ── */}

@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { createBooking } from "../../services/bookingService";
-import TravelerForm from "../../components/bookings/TravelerForm";
-import ContactForm from "../../components/bookings/ContactForm";
+import { createBooking } from "../services/bookingService";
+import TravelerForm from "../components/bookings/TravelerForm";
+import ContactForm from "../components/bookings/ContactForm";
 
 const BookingSummaryPage = ({ serviceData }) => {
   const [travelers, setTravelers] = useState([]);
