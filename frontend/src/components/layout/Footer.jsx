@@ -14,7 +14,7 @@ function Footer() {
               TravelHub
             </Link>
             <p className="text-cyan-200 text-sm leading-relaxed mb-6">
-              Your trusted partner for booking flights, hotels, travel packages, and car rentals worldwide. Discover your next adventure with us.
+              Your trusted partner for booking flights, hotels, travel packages, and vehicle rentals worldwide. Discover your next adventure with us.
             </p>
             <div className="flex items-center gap-4">
               <a href="#" className="w-10 h-10 bg-cyan-800 rounded-full flex items-center justify-center text-cyan-200 hover:bg-lime-500 hover:text-cyan-900 transition-all">
@@ -38,7 +38,7 @@ function Footer() {
               <li><Link to="/flights" className="text-cyan-200 hover:text-lime-400 transition-colors flex items-center gap-2 text-sm">✈ Flights</Link></li>
               <li><Link to="/hotels" className="text-cyan-200 hover:text-lime-400 transition-colors flex items-center gap-2 text-sm">🏨 Hotels</Link></li>
               <li><Link to="/packages" className="text-cyan-200 hover:text-lime-400 transition-colors flex items-center gap-2 text-sm">📦 Travel Packages</Link></li>
-              <li><Link to="/cars" className="text-cyan-200 hover:text-lime-400 transition-colors flex items-center gap-2 text-sm">🚗 Car Rentals</Link></li>
+              <li><Link to="/vehicles" className="text-cyan-200 hover:text-lime-400 transition-colors flex items-center gap-2 text-sm">🚗 Vehicle Rentals</Link></li>
             </ul>
           </div>
 

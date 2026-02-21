@@ -44,7 +44,7 @@ function Home() {
               Discover Your Next <span className="text-yellow-300">Adventure</span>
             </h1>
             <p className="text-lg md:text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
-              Book flights, hotels, packages, and car rentals all in one place. Your dream vacation is just a search away.
+              Book flights, hotels, packages, and vehicle rentals all in one place. Your dream vacation is just a search away.
             </p>
 
             <div className="bg-white rounded-2xl p-3 md:p-4 shadow-2xl shadow-blue-900/30 max-w-2xl mx-auto">

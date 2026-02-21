@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const CarSearchForm = ({ onSearch }) => {
+const VehicleSearchForm = ({ onSearch }) => {
   const [form, setForm] = useState({
     location: "",
     pickup_date: "",
@@ -31,9 +31,16 @@ const CarSearchForm = ({ onSearch }) => {
 
       <select name="type" onChange={handleChange}>
         <option value="">All Types</option>
+        <option value="MICRO">Micro</option>
+        <option value="MINI">Mini</option>
         <option value="SEDAN">Sedan</option>
         <option value="SUV">SUV</option>
         <option value="LUXURY">Luxury</option>
+        <option value="BIKE">Bike</option>
+        <option value="SCOOTER">Scooter</option>
+        <option value="BUS">Bus</option>
+        <option value="VAN">Van</option>
+        <option value="PICKUP">Pickup</option>
       </select>
 
       <button type="submit">Search</button>
@@ -41,4 +48,4 @@ const CarSearchForm = ({ onSearch }) => {
   );
 };
 
-export default CarSearchForm;
+export default VehicleSearchForm;

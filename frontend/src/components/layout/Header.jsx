@@ -7,7 +7,7 @@ const navLinks = [
   { to: '/flights', label: 'Flights', icon: <FiTruck size={18} /> },
   { to: '/hotels', label: 'Hotels', icon: <FiHome size={18} /> },
   { to: '/packages', label: 'Packages', icon: <FiBox size={18} /> },
-  { to: '/cars', label: 'Cars', icon: <FiMap size={18} /> },
+  { to: '/vehicles', label: 'Vehicle Rental', icon: <FiMap size={18} /> },
 ]
 
 function Header() {

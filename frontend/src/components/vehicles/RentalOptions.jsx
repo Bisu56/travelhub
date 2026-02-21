@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { bookCar } from "../../services/carService";
+import { bookVehicle } from "../../services/vehicleService";
 
-const RentalOptions = ({ car }) => {
+const RentalOptions = ({ vehicle }) => {
   const [days, setDays] = useState(1);
   const [insurance, setInsurance] = useState(false);
   const [withDriver, setWithDriver] = useState(false);
   const [agree, setAgree] = useState(false);
 
   const insuranceCost = insurance ? 20 * days : 0;
-  const baseCost = car.daily_rate * days;
+  const baseCost = vehicle.daily_rate * days;
   const total = baseCost + insuranceCost;
 
   const handleBooking = async () => {
@@ -18,14 +18,14 @@ const RentalOptions = ({ car }) => {
     }
 
     try {
-      await bookCar({
-        carId: car.id,
+      await bookVehicle({
+        vehicleId: vehicle.id,
         days,
         insurance,
         withDriver,
         totalAmount: total
       });
-      alert("Car booked successfully!");
+      alert("Vehicle booked successfully!");
     } catch {
       alert("Booking failed");
     }

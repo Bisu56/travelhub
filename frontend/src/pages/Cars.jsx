@@ -32,7 +32,7 @@ function Cars() {
     <div className="-mx-4 -mt-4">
       <section className="bg-gradient-to-br from-amber-500 via-orange-600 to-red-600 text-white">
         <div className="container mx-auto px-4 py-12 lg:py-16">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">Car Rentals</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">Vehicle Rentals</h1>
           <p className="text-amber-100 mb-8">Find the perfect ride for your journey</p>
 
           <div className="bg-white rounded-2xl p-6 shadow-2xl shadow-orange-900/20">

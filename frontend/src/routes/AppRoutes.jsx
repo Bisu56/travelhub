@@ -12,8 +12,9 @@ import FlightSearchPage from '../pages/flights/FlightSearchPage';
 import FlightBookingPage from '../pages/flights/FlightBookingPage';
 import HotelSearchPage from '../pages/hotels/HotelSearchPage';
 import HotelDetailPage from '../pages/hotels/HotelDetailPage';
+import VehicleSearchPage from '../pages/vehicles/VehicleSearchPage';
+import VehicleDetailPage from '../pages/vehicles/VehicleDetailPage';
 import Hotels from '../pages/Hotels';
-import Cars from '../pages/Cars';
 
 // Admin layout, guard & pages
 import PermissionGuard from '../hoc/PermissionGuard';
@@ -45,7 +46,8 @@ function AppRoutes() {
           <Route path="/flights/book/:id" element={<FlightBookingPage />} />
           <Route path="/hotels" element={<HotelSearchPage />} />
           <Route path="/hotels/:id" element={<HotelDetailPage />} />
-          <Route path="/cars" element={<Cars />} />
+          <Route path="/vehicles" element={<VehicleSearchPage />} />
+          <Route path="/vehicles/:id" element={<VehicleDetailPage />} />
         </Route>
 
         {/* ── ADMIN ROUTES (temporarily public) ── */}
