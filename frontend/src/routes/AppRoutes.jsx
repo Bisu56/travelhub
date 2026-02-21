@@ -28,6 +28,7 @@ import AdminLayout from '../components/layout/AdminLayout';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import AgentApproval from '../pages/admin/AgentApproval';
 import Destination from '../pages/admin/Destination';
+import AdminReviewModeration from '../features/reviews/pages/AdminReviewModeration';
 
 // Agent layout & pages
 import AgentLayout from '../components/layout/AgentLayout';
@@ -86,6 +87,15 @@ function AppRoutes() {
           element={
               <AdminLayout>
                 <Destination />
+              </AdminLayout>
+          }
+        />
+
+        <Route
+          path="/admin/reviews"
+          element={
+              <AdminLayout>
+                <AdminReviewModeration />
               </AdminLayout>
           }
         />

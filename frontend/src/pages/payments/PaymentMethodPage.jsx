@@ -1,22 +1,24 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import StripeCheckoutForm from "../../components/payments/StripeCheckoutForm";
 import KhaltiButton from "../../components/payments/KhaltiButton";
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 
 const PaymentMethodPage = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const [bookingId, setBookingId] = useState("");
-  const [amount, setAmount] = useState(0);
 
-  useEffect(() => {
+  const { bookingId, amount } = useMemo(() => {
     if (state) {
-      setBookingId(state.bookingId || "");
-      setAmount(state.amount || 0);
+      return {
+        bookingId: state.bookingId || "",
+        amount: state.amount || 0,
+      };
     } else {
       const params = new URLSearchParams(window.location.search);
-      setBookingId(params.get("bookingId") || "TEST-" + Date.now());
-      setAmount(params.get("amount") || 100);
+      return {
+        bookingId: params.get("bookingId") || "TEST-" + Date.now(),
+        amount: params.get("amount") || 100,
+      };
     }
   }, [state]);
 
