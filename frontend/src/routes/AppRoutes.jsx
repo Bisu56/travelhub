@@ -8,7 +8,8 @@ import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Packages from '../pages/Packages';
 import PackageDetail from '../pages/public/PackageDetail';
-import Flights from '../pages/Flights';
+import FlightSearchPage from '../pages/flights/FlightSearchPage';
+import FlightBookingPage from '../pages/flights/FlightBookingPage';
 import Hotels from '../pages/Hotels';
 import Cars from '../pages/Cars';
 
@@ -38,7 +39,8 @@ function AppRoutes() {
           <Route path="/register" element={<Register />} />
           <Route path="/packages" element={<Packages />} />
           <Route path="/packages/:id" element={<PackageDetail />} />
-          <Route path="/flights" element={<Flights />} />
+          <Route path="/flights" element={<FlightSearchPage />} />
+          <Route path="/flights/book/:id" element={<FlightBookingPage />} />
           <Route path="/hotels" element={<Hotels />} />
           <Route path="/cars" element={<Cars />} />
         </Route>
