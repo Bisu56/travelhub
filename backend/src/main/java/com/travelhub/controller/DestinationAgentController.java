@@ -11,7 +11,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
 @RestController
 @RequestMapping("/api/agent/destinations")
 @RequiredArgsConstructor
@@ -51,7 +50,6 @@ public class DestinationAgentController {
         return ResponseEntity.ok().build();
     }
 
-    // Booking actions for agent's packages
     @PostMapping("/booking/{bookingId}/confirm")
     public ResponseEntity<Void> confirmBooking(@PathVariable Long bookingId,
                                                Authentication auth) {
@@ -68,14 +66,21 @@ public class DestinationAgentController {
         return ResponseEntity.ok().build();
     }
 
-    // Agent can view bookings for their packages
+    @PostMapping("/booking/{bookingId}/reject")
+    public ResponseEntity<Void> rejectBooking(@PathVariable Long bookingId,
+                                              @RequestBody RejectionRequest request,
+                                              Authentication auth) {
+        User agent = userService.getCurrentUser(auth);
+        destinationService.rejectBooking(agent, bookingId, request.getReason());
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/bookings")
     public ResponseEntity<List<DestinationBookingResponseDTO>> myPackageBookings(Authentication auth) {
         User agent = userService.getCurrentUser(auth);
         return ResponseEntity.ok(destinationService.getBookingsForAgent(agent));
     }
 
-    // Agent can see reviews for their packages
     @GetMapping("/reviews")
     public ResponseEntity<List<ReviewResponseDTO>> myPackageReviews(Authentication auth) {
         User agent = userService.getCurrentUser(auth);
