@@ -47,4 +47,6 @@ public class FlightBooking {
     void onCreate() {
         createdAt = Instant.now();
     }
+    private String rejectionReason;
 }
+

@@ -21,4 +21,6 @@ public class FlightBookingResponseDTO {
 
     private String bookingStatus;
     private String paymentStatus;
+    private String rejectionReason;
+
 }

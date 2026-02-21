@@ -63,6 +63,8 @@ public class FlightMapper {
                 .totalPrice(booking.getTotalPrice())
                 .bookingStatus(booking.getBookingStatus().name())
                 .paymentStatus(booking.getPaymentStatus().name())
+                .rejectionReason(booking.getRejectionReason())
+
                 .build();
     }
 }

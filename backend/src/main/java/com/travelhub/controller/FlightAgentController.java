@@ -1,6 +1,7 @@
 package com.travelhub.controller;
 
 import com.travelhub.Dtos.*;
+import com.travelhub.entity.Flight;
 import com.travelhub.entity.User;
 import com.travelhub.service.FlightService;
 import com.travelhub.service.UserService;
@@ -60,7 +61,13 @@ public class FlightAgentController {
         return ResponseEntity.ok().build();
     }
 
-    // Booking management for agent-owned flights
+    @GetMapping("/bookings")
+    public ResponseEntity<List<FlightBookingResponseDTO>> myFlightBookings(
+            Authentication auth) {
+
+        User agent = userService.getCurrentUser(auth);
+        return ResponseEntity.ok(flightService.getBookingsForAgent(agent));
+    }
 
     @PostMapping("/booking/{bookingId}/confirm")
     public ResponseEntity<Void> confirmBooking(
@@ -82,12 +89,15 @@ public class FlightAgentController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/bookings")
-    public ResponseEntity<List<FlightBookingResponseDTO>> myFlightBookings(
+    @PostMapping("/booking/{bookingId}/reject")
+    public ResponseEntity<Void> rejectBooking(
+            @PathVariable Long bookingId,
+            @RequestBody BookingRejectionRequest request,
             Authentication auth) {
 
         User agent = userService.getCurrentUser(auth);
-        return ResponseEntity.ok(flightService.getBookingsForAgent(agent));
+        flightService.rejectBooking(agent, bookingId, request.getReason());
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/reviews")
@@ -95,8 +105,11 @@ public class FlightAgentController {
             Authentication auth) {
 
         User agent = userService.getCurrentUser(auth);
-        return ResponseEntity.ok(
-                flightService.getBookingsForAgent(agent)
-        );
+        List<Flight> flights = flightService.getFlightsByAgent(agent);
+        List<ReviewResponseDTO> reviews = flights.stream()
+                .flatMap(f -> flightService.getReviews(f.getId()).stream())
+                .toList();
+
+        return ResponseEntity.ok(reviews);
     }
 }
