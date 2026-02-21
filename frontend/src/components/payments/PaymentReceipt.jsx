@@ -1,6 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 const PaymentReceipt = ({ data }) => {
+  const [txnId] = useState(() => `TXN-${Date.now()}`);
+  
   const handlePrint = () => {
     window.print();
   };
@@ -13,9 +15,9 @@ const PaymentReceipt = ({ data }) => {
       method: localStorage.getItem("paymentMethod") || "N/A",
       date: new Date().toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
-      transactionId: `TXN-${Date.now()}`
+      transactionId: txnId
     };
-  }, [data]);
+  }, [data, txnId]);
 
   return (
     <div style={{ 
