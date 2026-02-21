@@ -1,8 +1,6 @@
 package com.travelhub.controller;
 
-import com.travelhub.Dtos.FlightBookingResponseDTO;
-import com.travelhub.Dtos.FlightResponseDTO;
-import com.travelhub.Dtos.RejectionRequest;
+import com.travelhub.Dtos.*;
 import com.travelhub.entity.User;
 import com.travelhub.service.FlightService;
 import com.travelhub.service.UserService;
@@ -15,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/flights")
+@RequestMapping(value = "/api/admin/flights", produces = "application/json")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class FlightAdminController {
@@ -32,10 +30,12 @@ public class FlightAdminController {
     public ResponseEntity<FlightResponseDTO> approveFlight(
             @PathVariable Long flightId,
             @RequestHeader(value = "X-Forwarded-For", required = false) String ip,
-            Authentication authentication) {
+            Authentication auth) {
 
-        User admin = userService.getCurrentUser(authentication);
-        return ResponseEntity.ok(flightService.approveFlight(admin, flightId, ip));
+        User admin = userService.getCurrentUser(auth);
+        return ResponseEntity.ok(
+                flightService.approveFlight(admin, flightId, ip)
+        );
     }
 
     @PostMapping("/{flightId}/reject")
@@ -43,9 +43,9 @@ public class FlightAdminController {
             @PathVariable Long flightId,
             @RequestBody RejectionRequest request,
             @RequestHeader(value = "X-Forwarded-For", required = false) String ip,
-            Authentication authentication) {
+            Authentication auth) {
 
-        User admin = userService.getCurrentUser(authentication);
+        User admin = userService.getCurrentUser(auth);
         return ResponseEntity.ok(
                 flightService.rejectFlight(admin, flightId, request.getReason(), ip)
         );
@@ -55,17 +55,11 @@ public class FlightAdminController {
     public ResponseEntity<FlightResponseDTO> publishFlight(
             @PathVariable Long flightId,
             @RequestHeader(value = "X-Forwarded-For", required = false) String ip,
-            Authentication authentication) {
+            Authentication auth) {
 
-        User admin = userService.getCurrentUser(authentication);
-        return ResponseEntity.ok(flightService.publishFlight(admin, flightId, ip));
-    }
-
-    @GetMapping("/bookings")
-    public ResponseEntity<List<FlightBookingResponseDTO>> getAllBookings(
-            Authentication authentication) {
-
-        userService.getCurrentUser(authentication);
-        return ResponseEntity.ok(flightService.getAllBookings());
+        User admin = userService.getCurrentUser(auth);
+        return ResponseEntity.ok(
+                flightService.publishFlight(admin, flightId, ip)
+        );
     }
 }

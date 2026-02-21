@@ -1,18 +1,18 @@
 package com.travelhub.service;
 
 import com.travelhub.Dtos.*;
+import com.travelhub.Mapper.FlightMapper;
 import com.travelhub.entity.*;
 import com.travelhub.entity.enums.*;
 import com.travelhub.exception.*;
 import com.travelhub.repository.*;
-import com.travelhub.Mapper.FlightMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -25,195 +25,270 @@ public class FlightService {
     private final ReviewService reviewService;
     private final AuditService auditService;
 
-    // ======================= FLIGHT CRUD =======================
 
     public FlightResponseDTO createFlight(User agent, FlightRequestDTO dto) {
-        if(agent.getRole() != Role.AGENT) throw new ForbiddenException("Only agents can create flights");
+
+        if (agent.getRole() != Role.AGENT)
+            throw new ForbiddenException("Only agents allowed");
+
+        validateFlight(dto);
+
         Flight flight = FlightMapper.toEntity(dto, agent);
         flight.setStatus(PackageStatus.DRAFT);
         flight.calculateFinalPrice();
+
         flightRepository.save(flight);
+
         return FlightMapper.toDTO(flight);
     }
 
     public FlightResponseDTO updateFlight(User agent, Long id, FlightRequestDTO dto) {
-        Flight flight = getOwnedFlight(id, agent);
-        updateFields(flight, dto);
+
+        Flight flight = getOwnedFlight(agent, id);
+
+        validateFlight(dto);
+
+        flight.setAirlineName(dto.getAirlineName());
+        flight.setFlightNumber(dto.getFlightNumber());
+        flight.setDepartureCountry(dto.getDepartureCountry());
+        flight.setDepartureCity(dto.getDepartureCity());
+        flight.setArrivalCountry(dto.getArrivalCountry());
+        flight.setArrivalCity(dto.getArrivalCity());
+        flight.setType(dto.getType());
+        flight.setDepartureDate(dto.getDepartureDate());
+        flight.setArrivalDate(dto.getArrivalDate());
+        flight.setBasePrice(dto.getBasePrice());
+        flight.setDiscountPercentage(dto.getDiscountPercentage());
+        flight.setTotalSeats(dto.getTotalSeats());
+        flight.setImageUrls(dto.getImageUrls());
+
         flight.calculateFinalPrice();
         flightRepository.save(flight);
+
         return FlightMapper.toDTO(flight);
     }
 
     public FlightResponseDTO submitFlight(User agent, Long id) {
-        Flight flight = getOwnedFlight(id, agent);
+
+        Flight flight = getOwnedFlight(agent, id);
         flight.setStatus(PackageStatus.SUBMITTED);
         flightRepository.save(flight);
+
         return FlightMapper.toDTO(flight);
     }
 
     public void deleteFlight(User agent, Long id) {
-        Flight flight = getOwnedFlight(id, agent);
+
+        Flight flight = getOwnedFlight(agent, id);
         flight.setIsDeleted(true);
         flightRepository.save(flight);
     }
 
-    // ======================= ADMIN ACTIONS =======================
-
-    public FlightResponseDTO approveFlight(User admin, Long id, String ip) {
-        Flight flight = getFlight(id);
-        checkAdmin(admin);
-        if(flight.getStatus() != PackageStatus.SUBMITTED) throw new BadRequestException("Only SUBMITTED flights can be approved");
-        flight.setStatus(PackageStatus.APPROVED);
-        flight.setApprovedBy(admin);
-        flight.setApprovedAt(LocalDateTime.now());
-        flight.setRejectionReason(null);
-        flightRepository.save(flight);
-        auditService.log(admin.getEmail(), "APPROVED FLIGHT " + id, ip);
-        return FlightMapper.toDTO(flight);
-    }
-
-    public FlightResponseDTO rejectFlight(User admin, Long id, String reason, String ip) {
-        Flight flight = getFlight(id);
-        checkAdmin(admin);
-        if(flight.getStatus() != PackageStatus.SUBMITTED) throw new BadRequestException("Only SUBMITTED flights can be rejected");
-        flight.setStatus(PackageStatus.REJECTED);
-        flight.setRejectionReason(reason);
-        flight.setApprovedBy(null);
-        flight.setApprovedAt(null);
-        flightRepository.save(flight);
-        auditService.log(admin.getEmail(), "REJECTED FLIGHT " + id + " REASON: " + reason, ip);
-        return FlightMapper.toDTO(flight);
-    }
-
-    public FlightResponseDTO publishFlight(User admin, Long id, String ip) {
-        Flight flight = getFlight(id);
-        checkAdmin(admin);
-        if(flight.getStatus() != PackageStatus.APPROVED) throw new BadRequestException("Only APPROVED flights can be published");
-        flight.setStatus(PackageStatus.PUBLISHED);
-        flightRepository.save(flight);
-        auditService.log(admin.getEmail(), "PUBLISHED FLIGHT " + id, ip);
-        return FlightMapper.toDTO(flight);
-    }
 
     public List<FlightResponseDTO> listPendingFlights() {
-        return flightRepository.findByStatusAndIsDeletedFalse(PackageStatus.SUBMITTED)
-                .stream().map(FlightMapper::toDTO).toList();
-    }
 
-    // ======================= USER SEARCH =======================
-
-    public List<FlightResponseDTO> searchFlights(String origin, String destination, LocalDateTime start, LocalDateTime end) {
-        return flightRepository.findAll(PageRequest.of(0, 50)) // simple search placeholder
+        return flightRepository
+                .findByStatusAndIsDeletedFalse(PackageStatus.SUBMITTED)
                 .stream()
-                .filter(f -> f.getStatus() == PackageStatus.PUBLISHED)
-                .filter(f -> origin == null || f.getOrigin().equalsIgnoreCase(origin))
-                .filter(f -> destination == null || f.getDestination().equalsIgnoreCase(destination))
-                .filter(f -> start == null || !f.getDepartureTime().isBefore(start))
-                .filter(f -> end == null || !f.getDepartureTime().isAfter(end))
                 .map(FlightMapper::toDTO)
                 .toList();
     }
 
-    // ======================= BOOKINGS =======================
+    public FlightResponseDTO approveFlight(User admin, Long id, String ip) {
 
-    public FlightBookingResponseDTO bookFlight(User user, Long flightId, Integer seats) {
-        Flight flight = getFlightForUpdate(flightId);
+        checkAdmin(admin);
 
-        if(flight.getStatus() != PackageStatus.PUBLISHED) throw new BadRequestException("Flight not available");
-        if(seats > flight.getAvailableSeats()) throw new BadRequestException("Not enough seats available");
+        Flight flight = getFlight(id);
 
-        BigDecimal totalPrice = flight.getFinalPrice().multiply(BigDecimal.valueOf(seats));
+        if (flight.getStatus() != PackageStatus.SUBMITTED)
+            throw new BadRequestException("Only SUBMITTED flights can be approved");
+
+        flight.setStatus(PackageStatus.APPROVED);
+        flight.setApprovedBy(admin);
+        flight.setApprovedAt(Instant.now());
+        flight.setRejectionReason(null);
+
+        flightRepository.save(flight);
+        auditService.log(admin.getEmail(), "APPROVED FLIGHT " + id, ip);
+
+        return FlightMapper.toDTO(flight);
+    }
+
+    public FlightResponseDTO rejectFlight(User admin, Long id, String reason, String ip) {
+
+        checkAdmin(admin);
+
+        Flight flight = getFlight(id);
+
+        if (flight.getStatus() != PackageStatus.SUBMITTED)
+            throw new BadRequestException("Only SUBMITTED flights can be rejected");
+
+        flight.setStatus(PackageStatus.REJECTED);
+        flight.setRejectionReason(reason);
+        flight.setApprovedBy(null);
+        flight.setApprovedAt(null);
+
+        flightRepository.save(flight);
+        auditService.log(admin.getEmail(), "REJECTED FLIGHT " + id, ip);
+
+        return FlightMapper.toDTO(flight);
+    }
+
+    public FlightResponseDTO publishFlight(User admin, Long id, String ip) {
+
+        checkAdmin(admin);
+
+        Flight flight = getFlight(id);
+
+        if (flight.getStatus() != PackageStatus.APPROVED)
+            throw new BadRequestException("Only APPROVED flights can be published");
+
+        flight.setStatus(PackageStatus.PUBLISHED);
+        flightRepository.save(flight);
+
+        auditService.log(admin.getEmail(), "PUBLISHED FLIGHT " + id, ip);
+
+        return FlightMapper.toDTO(flight);
+    }
+
+
+    public List<FlightResponseDTO> searchFlights(String departureCity,
+                                                 String arrivalCity,
+                                                 DestinationType type,
+                                                 LocalDate date,
+                                                 Double minPrice,
+                                                 Double maxPrice) {
+
+        return flightRepository
+                .findByStatusAndIsDeletedFalse(PackageStatus.PUBLISHED)
+                .stream()
+                .filter(f -> match(departureCity, f.getDepartureCity()))
+                .filter(f -> match(arrivalCity, f.getArrivalCity()))
+                .filter(f -> type == null || f.getType() == type)
+                .filter(f -> date == null || f.getDepartureDate().equals(date))
+                .filter(f -> minPrice == null || f.getFinalPrice().doubleValue() >= minPrice)
+                .filter(f -> maxPrice == null || f.getFinalPrice().doubleValue() <= maxPrice)
+                .map(FlightMapper::toDTO)
+                .toList();
+    }
+
+    public FlightBookingResponseDTO bookFlight(User user,
+                                               Long flightId,
+                                               Integer passengers,
+                                               FlightClassType flightClass) {
+
+        Flight flight = getFlight(flightId);
+
+        if (flight.getStatus() != PackageStatus.PUBLISHED)
+            throw new BadRequestException("Flight not available");
+
+        if (passengers <= 0)
+            throw new BadRequestException("Invalid passenger count");
+
+        BigDecimal total =
+                flight.getFinalPrice()
+                        .multiply(BigDecimal.valueOf(passengers));
 
         FlightBooking booking = FlightBooking.builder()
                 .user(user)
                 .flight(flight)
-                .numberOfSeats(seats)
-                .totalPrice(totalPrice)
+                .passengers(passengers)
+                .flightClass(flightClass)
+                .totalPrice(total)
                 .bookingStatus(BookingStatus.PENDING)
                 .paymentStatus(PaymentStatus.UNPAID)
                 .build();
 
-        flight.setAvailableSeats(flight.getAvailableSeats() - seats);
-
         bookingRepository.save(booking);
-        flightRepository.save(flight);
 
-        return FlightBookingResponseDTO.builder()
-                .id(booking.getId())
-                .flightId(flight.getId())
-                .flightNumber(flight.getFlightNumber())
-                .numberOfSeats(seats)
-                .totalPrice(totalPrice)
-                .bookingStatus(booking.getBookingStatus().name())
-                .paymentStatus(booking.getPaymentStatus().name())
-                .build();
+        return FlightMapper.bookingToDTO(booking);
     }
 
     public void cancelBooking(User user, Long bookingId) {
+
         FlightBooking booking = getBooking(bookingId);
-        if(!booking.getUser().getId().equals(user.getId())) throw new ForbiddenException("Not your booking");
-        if(booking.getBookingStatus() == BookingStatus.COMPLETED) throw new BadRequestException("Cannot cancel completed booking");
+
+        if (!booking.getUser().getId().equals(user.getId()))
+            throw new ForbiddenException("Not your booking");
+
+        if (booking.getBookingStatus() == BookingStatus.COMPLETED)
+            throw new BadRequestException("Cannot cancel completed booking");
 
         booking.setBookingStatus(BookingStatus.CANCELLED);
-        Flight flight = booking.getFlight();
-        flight.setAvailableSeats(flight.getAvailableSeats() + booking.getNumberOfSeats());
         bookingRepository.save(booking);
-        flightRepository.save(flight);
     }
 
     public void confirmBooking(User actor, Long bookingId) {
+
         FlightBooking booking = getBooking(bookingId);
-        if(booking.getBookingStatus() != BookingStatus.PENDING) throw new BadRequestException("Only PENDING bookings can be confirmed");
+
+        if (booking.getBookingStatus() != BookingStatus.PENDING)
+            throw new BadRequestException("Only PENDING bookings allowed");
+
         checkBookingPermission(actor, booking);
+
         booking.setBookingStatus(BookingStatus.CONFIRMED);
         bookingRepository.save(booking);
     }
 
     public void completeBooking(User actor, Long bookingId) {
+
         FlightBooking booking = getBooking(bookingId);
-        if(booking.getBookingStatus() != BookingStatus.CONFIRMED) throw new BadRequestException("Only CONFIRMED bookings can be completed");
+
+        if (booking.getBookingStatus() != BookingStatus.CONFIRMED)
+            throw new BadRequestException("Only CONFIRMED bookings allowed");
+
         checkBookingPermission(actor, booking);
+
         booking.setBookingStatus(BookingStatus.COMPLETED);
         bookingRepository.save(booking);
     }
 
     public List<FlightBookingResponseDTO> getUserBookings(User user) {
-        return bookingRepository.findByUser(user).stream()
-                .map(b -> FlightBookingResponseDTO.builder()
-                        .id(b.getId())
-                        .flightId(b.getFlight().getId())
-                        .flightNumber(b.getFlight().getFlightNumber())
-                        .numberOfSeats(b.getNumberOfSeats())
-                        .totalPrice(b.getTotalPrice())
-                        .bookingStatus(b.getBookingStatus().name())
-                        .paymentStatus(b.getPaymentStatus().name())
-                        .build())
+
+        return bookingRepository.findByUser(user)
+                .stream()
+                .map(FlightMapper::bookingToDTO)
                 .toList();
     }
 
     public List<FlightBookingResponseDTO> getBookingsForAgent(User agent) {
-        List<Long> flightIds = flightRepository.findByCreatedByAndIsDeletedFalse(agent)
-                .stream().map(Flight::getId).toList();
 
-        return bookingRepository.findByFlightIdIn(flightIds).stream()
-                .map(b -> FlightBookingResponseDTO.builder()
-                        .id(b.getId())
-                        .flightId(b.getFlight().getId())
-                        .flightNumber(b.getFlight().getFlightNumber())
-                        .numberOfSeats(b.getNumberOfSeats())
-                        .totalPrice(b.getTotalPrice())
-                        .bookingStatus(b.getBookingStatus().name())
-                        .paymentStatus(b.getPaymentStatus().name())
-                        .build())
+        List<Long> flightIds =
+                flightRepository.findByCreatedByIdAndIsDeletedFalse(agent.getId())
+                        .stream()
+                        .map(Flight::getId)
+                        .toList();
+
+        return bookingRepository.findByFlightIdIn(flightIds)
+                .stream()
+                .map(FlightMapper::bookingToDTO)
                 .toList();
     }
 
-    public List<ReviewResponseDTO> getReviewsForFlight(User agent) {
-        List<Long> flightIds = flightRepository.findByCreatedByAndIsDeletedFalse(agent)
-                .stream().map(Flight::getId).toList();
 
-        return flightIds.stream()
-                .flatMap(fId -> reviewService.getReviews(fId).stream())
+
+    public ReviewResponseDTO addReview(User user,
+                                       Long flightId,
+                                       Integer rating,
+                                       String comment) {
+
+        Review review = reviewService.addReview(flightId, rating, comment, user);
+
+        return ReviewResponseDTO.builder()
+                .id(review.getId())
+                .packageId(review.getReferenceId())
+                .userId(user.getId())
+                .userEmail(user.getEmail())
+                .rating(review.getRating())
+                .comment(review.getComment())
+                .build();
+    }
+
+    public List<ReviewResponseDTO> getReviews(Long flightId) {
+
+        return reviewService.getReviews(flightId)
+                .stream()
                 .map(r -> ReviewResponseDTO.builder()
                         .id(r.getId())
                         .packageId(r.getReferenceId())
@@ -225,21 +300,24 @@ public class FlightService {
                 .toList();
     }
 
-    // ======================= HELPERS =======================
+
+    private void validateFlight(FlightRequestDTO dto) {
+
+        if (dto.getBasePrice() == null ||
+                dto.getBasePrice().compareTo(BigDecimal.ZERO) <= 0)
+            throw new BadRequestException("Base price must be > 0");
+
+        if (dto.getDepartureDate().isAfter(dto.getArrivalDate()))
+            throw new BadRequestException("Invalid flight dates");
+
+        if (dto.getDiscountPercentage() != null &&
+                (dto.getDiscountPercentage().compareTo(BigDecimal.ZERO) < 0 ||
+                        dto.getDiscountPercentage().compareTo(BigDecimal.valueOf(100)) > 0))
+            throw new BadRequestException("Discount must be 0-100");
+    }
 
     private Flight getFlight(Long id) {
         return flightRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Flight not found"));
-    }
-
-    private Flight getOwnedFlight(Long id, User agent) {
-        Flight flight = getFlight(id);
-        if(!flight.getCreatedBy().getId().equals(agent.getId())) throw new ForbiddenException("Not your flight");
-        return flight;
-    }
-
-    private Flight getFlightForUpdate(Long id) {
-        return flightRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new RuntimeException("Flight not found"));
     }
 
@@ -248,23 +326,35 @@ public class FlightService {
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
     }
 
-    private void checkAdmin(User admin) { if(admin.getRole() != Role.ADMIN) throw new ForbiddenException("Only admin allowed"); }
+    private Flight getOwnedFlight(User agent, Long id) {
 
-    private void checkBookingPermission(User actor, FlightBooking booking) {
-        boolean isAdmin = actor.getRole() == Role.ADMIN;
-        boolean isAgent = actor.getRole() == Role.AGENT &&
-                booking.getFlight().getCreatedBy().getId().equals(actor.getId());
-        if(!isAdmin && !isAgent) throw new ForbiddenException("Unauthorized to act on booking");
+        Flight flight = getFlight(id);
+
+        if (!flight.getCreatedBy().getId().equals(agent.getId()))
+            throw new ForbiddenException("Not your flight");
+
+        return flight;
     }
 
-    private void updateFields(Flight flight, FlightRequestDTO dto) {
-        flight.setFlightNumber(dto.getFlightNumber());
-        flight.setOrigin(dto.getOrigin());
-        flight.setDestination(dto.getDestination());
-        flight.setDepartureTime(dto.getDepartureTime());
-        flight.setArrivalTime(dto.getArrivalTime());
-        flight.setFlightClass(dto.getFlightClass());
-        flight.setAvailableSeats(dto.getAvailableSeats());
-        flight.setBasePrice(dto.getBasePrice());
+    private void checkAdmin(User user) {
+        if (user.getRole() != Role.ADMIN)
+            throw new ForbiddenException("Admin only");
+    }
+
+    private void checkBookingPermission(User actor, FlightBooking booking) {
+
+        boolean isAdmin = actor.getRole() == Role.ADMIN;
+
+        boolean isAgent = actor.getRole() == Role.AGENT &&
+                booking.getFlight().getCreatedBy().getId()
+                        .equals(actor.getId());
+
+        if (!isAdmin && !isAgent)
+            throw new ForbiddenException("Unauthorized");
+    }
+
+    private boolean match(String filter, String value) {
+        return filter == null ||
+                (value != null && value.equalsIgnoreCase(filter));
     }
 }

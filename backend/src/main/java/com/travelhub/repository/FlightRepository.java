@@ -2,32 +2,22 @@ package com.travelhub.repository;
 
 import com.travelhub.entity.Flight;
 import com.travelhub.entity.enums.PackageStatus;
-import com.travelhub.entity.enums.DestinationType;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.*;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import jakarta.persistence.LockModeType;
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
-public interface FlightRepository extends JpaRepository<Flight, Long>, JpaSpecificationExecutor<Flight> {
+public interface FlightRepository extends JpaRepository<Flight, Long> {
 
-    // USER SEARCH
-    Page<Flight> findByOriginIgnoreCaseAndDestinationIgnoreCaseAndDepartureTimeBetweenAndStatus(
-            String origin,
-            String destination,
-            LocalDateTime start,
-            LocalDateTime end,
-            PackageStatus status,
-            Pageable pageable,
-            String DestinationType
-    );
+    List<Flight> findByStatusAndIsDeletedFalse(PackageStatus status);
 
-    // LOCK FOR BOOKING
+    List<Flight> findByCreatedByIdAndIsDeletedFalse(Long agentId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT f FROM Flight f WHERE f.id = :id AND f.isDeleted = false")
     Optional<Flight> findByIdForUpdate(@Param("id") Long id);
-
 }

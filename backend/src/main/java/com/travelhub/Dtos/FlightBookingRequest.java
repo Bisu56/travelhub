@@ -6,14 +6,12 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class FlightBookingRequestDTO {
+public class FlightBookingRequest {
 
     @NotNull
-    private Long flightId;
-
-    @NotNull
-    private FlightClassType flightClassType;
-
     @Min(1)
-    private Integer passengersCount;
+    private Integer passengers;
+
+    @NotNull
+    private FlightClassType flightClass;
 }

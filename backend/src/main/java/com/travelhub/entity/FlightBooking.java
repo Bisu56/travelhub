@@ -1,12 +1,13 @@
 package com.travelhub.entity;
 
 import com.travelhub.entity.enums.BookingStatus;
+import com.travelhub.entity.enums.FlightClassType;
 import com.travelhub.entity.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "flight_bookings")
@@ -27,7 +28,10 @@ public class FlightBooking {
     @ManyToOne
     private Flight flight;
 
-    private Integer numberOfSeats;
+    private Integer passengers;
+
+    @Enumerated(EnumType.STRING)
+    private FlightClassType flightClass;
 
     private BigDecimal totalPrice;
 
@@ -37,19 +41,10 @@ public class FlightBooking {
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Instant createdAt;
 
     @PrePersist
     void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-        if (bookingStatus == null) bookingStatus = BookingStatus.PENDING;
-        if (paymentStatus == null) paymentStatus = PaymentStatus.UNPAID;
-    }
-
-    @PreUpdate
-    void onUpdate() {
-        updatedAt = LocalDateTime.now();
+        createdAt = Instant.now();
     }
 }

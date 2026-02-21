@@ -23,7 +23,6 @@ public class DestinationUserController {
     private final DestinationService destinationService;
     private final UserService userService;
 
-    // 1️⃣ Search packages
     @GetMapping("/search")
     public ResponseEntity<List<DestinationResponseDTO>> search(
             @RequestParam(required = false) String country,
@@ -42,7 +41,6 @@ public class DestinationUserController {
                 includesHotel, includesFlight, includesFood, includesTransport));
     }
 
-    // 2️⃣ Book package
     @PostMapping("/{packageId}/book")
     public ResponseEntity<DestinationBookingResponseDTO> book(
             @PathVariable Long packageId,
@@ -54,7 +52,6 @@ public class DestinationUserController {
                 request.getPeople(), request.getTravelDate()));
     }
 
-    // 3️⃣ Cancel booking
     @PostMapping("/booking/{bookingId}/cancel")
     public ResponseEntity<Void> cancelBooking(@PathVariable Long bookingId,
                                               Authentication auth) {
@@ -63,14 +60,12 @@ public class DestinationUserController {
         return ResponseEntity.ok().build();
     }
 
-    // 4️⃣ Get previous bookings
     @GetMapping("/bookings")
     public ResponseEntity<List<DestinationBookingResponseDTO>> myBookings(Authentication auth) {
         User user = userService.getCurrentUser(auth);
         return ResponseEntity.ok(destinationService.getUserBookings(user));
     }
 
-    // 5️⃣ Add review
     @PostMapping("/{packageId}/review")
     public ResponseEntity<ReviewResponseDTO> review(
             @PathVariable Long packageId,
@@ -82,7 +77,6 @@ public class DestinationUserController {
                 request.getRating(), request.getComment()));
     }
 
-    // 6️⃣ Get reviews for a package
     @GetMapping("/{packageId}/reviews")
     public ResponseEntity<List<ReviewResponseDTO>> getReviews(@PathVariable Long packageId) {
         return ResponseEntity.ok(destinationService.getReviewsForPackage(packageId));

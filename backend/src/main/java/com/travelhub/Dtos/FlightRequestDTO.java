@@ -1,29 +1,33 @@
 package com.travelhub.Dtos;
 
-import com.travelhub.entity.enums.FlightClassType;
-import lombok.*;
+import com.travelhub.entity.enums.DestinationType;
+import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.util.List;
 
-@Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 public class FlightRequestDTO {
 
+    private String airlineName;
     private String flightNumber;
 
-    private String origin;
-    private String destination;
+    private String departureCountry;
+    private String departureCity;
 
-    private LocalDateTime departureTime;
-    private LocalDateTime arrivalTime;
+    private String arrivalCountry;
+    private String arrivalCity;
 
-    private FlightClassType flightClass;
+    private DestinationType type;
 
-    private Integer availableSeats;
+    private LocalDate departureDate;
+    private LocalDate arrivalDate;
 
     private BigDecimal basePrice;
+    private BigDecimal discountPercentage;
+
+    private Integer totalSeats;
+
+    private List<String> imageUrls;
 }
