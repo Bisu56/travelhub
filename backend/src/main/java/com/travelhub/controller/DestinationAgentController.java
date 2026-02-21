@@ -1,15 +1,9 @@
 package com.travelhub.controller;
 
-import com.travelhub.Dtos.DestinationRequestDTO;
-import com.travelhub.Dtos.DestinationResponseDTO;
-import com.travelhub.Mapper.DestinationMapper;
+import com.travelhub.Dtos.*;
 import com.travelhub.entity.User;
-import com.travelhub.repository.DestinationBookingRepository;
-import com.travelhub.service.DestinationAdminService;
-import com.travelhub.service.DestinationAgentService;
-import com.travelhub.service.DestinationBookingService;
+import com.travelhub.service.DestinationService;
 import com.travelhub.service.UserService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,68 +18,67 @@ import java.util.List;
 @PreAuthorize("hasRole('AGENT')")
 public class DestinationAgentController {
 
-    private final DestinationAgentService agentService;
-    private final DestinationBookingService bookingService; // For marking booking complete
+    private final DestinationService destinationService;
     private final UserService userService;
 
-    @PostMapping
-    public ResponseEntity<DestinationResponseDTO> create(
-            @Valid @RequestBody DestinationRequestDTO request,
-            Authentication auth
-    ) {
+    @PostMapping("/create")
+    public ResponseEntity<DestinationResponseDTO> create(@RequestBody DestinationRequestDTO dto,
+                                                         Authentication auth) {
         User agent = userService.getCurrentUser(auth);
-        return ResponseEntity.ok(
-                DestinationMapper.toDTO(agentService.create(request, agent))
-        );
+        return ResponseEntity.ok(destinationService.createPackage(agent, dto));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<DestinationResponseDTO> update(
-            @PathVariable Long id,
-            @Valid @RequestBody DestinationRequestDTO request,
-            Authentication auth
-    ) {
+    @PutMapping("/{packageId}")
+    public ResponseEntity<DestinationResponseDTO> update(@PathVariable Long packageId,
+                                                         @RequestBody DestinationRequestDTO dto,
+                                                         Authentication auth) {
         User agent = userService.getCurrentUser(auth);
-        return ResponseEntity.ok(
-                DestinationMapper.toDTO(agentService.update(id, request, agent))
-        );
+        return ResponseEntity.ok(destinationService.updatePackage(agent, packageId, dto));
     }
 
-    @PostMapping("/{id}/submit")
-    public ResponseEntity<DestinationResponseDTO> submit(
-            @PathVariable Long id,
-            Authentication auth
-    ) {
+    @PostMapping("/{packageId}/submit")
+    public ResponseEntity<DestinationResponseDTO> submit(@PathVariable Long packageId,
+                                                         Authentication auth) {
         User agent = userService.getCurrentUser(auth);
-        return ResponseEntity.ok(
-                DestinationMapper.toDTO(agentService.submit(id, agent))
-        );
+        return ResponseEntity.ok(destinationService.submitPackage(agent, packageId));
     }
 
-    @GetMapping("/my-packages")
-    public ResponseEntity<List<DestinationResponseDTO>> myPackages(Authentication auth) {
+    @DeleteMapping("/{packageId}")
+    public ResponseEntity<Void> delete(@PathVariable Long packageId,
+                                       Authentication auth) {
         User agent = userService.getCurrentUser(auth);
-        List<DestinationResponseDTO> list = agentService.getAgentPackages(agent)
-                .stream()
-                .map(DestinationMapper::toDTO)
-                .toList();
-        return ResponseEntity.ok(list);
+        destinationService.deletePackage(agent, packageId);
+        return ResponseEntity.ok().build();
     }
+
+    // Booking actions for agent's packages
     @PostMapping("/booking/{bookingId}/confirm")
-    public ResponseEntity<?> confirmBooking(@PathVariable Long bookingId,
-                                            Authentication auth) {
+    public ResponseEntity<Void> confirmBooking(@PathVariable Long bookingId,
+                                               Authentication auth) {
         User agent = userService.getCurrentUser(auth);
-        bookingService.confirmBooking(bookingId, agent);
-        return ResponseEntity.ok().body("{\"message\":\"Booking confirmed\"}");
+        destinationService.confirmBooking(agent, bookingId);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/booking/{bookingId}/complete")
-    public ResponseEntity<?> completeBooking(
-            @PathVariable Long bookingId,
-            Authentication auth
-    ) {
+    public ResponseEntity<Void> completeBooking(@PathVariable Long bookingId,
+                                                Authentication auth) {
         User agent = userService.getCurrentUser(auth);
-        bookingService.completeBooking(bookingId, agent);
-        return ResponseEntity.ok().body("{\"message\":\"Booking marked as COMPLETED and user notified.\"}");
+        destinationService.completeBooking(agent, bookingId);
+        return ResponseEntity.ok().build();
+    }
+
+    // Agent can view bookings for their packages
+    @GetMapping("/bookings")
+    public ResponseEntity<List<DestinationBookingResponseDTO>> myPackageBookings(Authentication auth) {
+        User agent = userService.getCurrentUser(auth);
+        return ResponseEntity.ok(destinationService.getBookingsForAgent(agent));
+    }
+
+    // Agent can see reviews for their packages
+    @GetMapping("/reviews")
+    public ResponseEntity<List<ReviewResponseDTO>> myPackageReviews(Authentication auth) {
+        User agent = userService.getCurrentUser(auth);
+        return ResponseEntity.ok(destinationService.getReviewsForAgent(agent));
     }
 }

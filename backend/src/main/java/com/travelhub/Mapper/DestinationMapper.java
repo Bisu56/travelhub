@@ -5,24 +5,19 @@ import com.travelhub.entity.*;
 
 public class DestinationMapper {
 
-    public static DestinationPackage toEntity(
-            DestinationRequestDTO dto,
-            User agent
-    ) {
-
-        PackageInclusionDetails inclusion =
-                PackageInclusionDetails.builder()
-                        .includesHotel(dto.getIncludesHotel())
-                        .includesFlight(dto.getIncludesFlight())
-                        .includesFood(dto.getIncludesFood())
-                        .includesTransport(dto.getIncludesTransport())
-                        .hotelCost(dto.getHotelCost())
-                        .flightCost(dto.getFlightCost())
-                        .foodCost(dto.getFoodCost())
-                        .transportCost(dto.getTransportCost())
-                        .hotelType(dto.getHotelType())
-                        .flightClass(dto.getFlightClass())
-                        .build();
+    public static DestinationPackage toEntity(DestinationRequestDTO dto, User agent) {
+        PackageInclusionDetails inclusion = PackageInclusionDetails.builder()
+                .includesHotel(dto.getIncludesHotel())
+                .includesFlight(dto.getIncludesFlight())
+                .includesFood(dto.getIncludesFood())
+                .includesTransport(dto.getIncludesTransport())
+                .hotelCost(dto.getHotelCost())
+                .flightCost(dto.getFlightCost())
+                .foodCost(dto.getFoodCost())
+                .transportCost(dto.getTransportCost())
+                .hotelType(dto.getHotelType())
+                .flightClass(dto.getFlightClass())
+                .build();
 
         return DestinationPackage.builder()
                 .title(dto.getTitle())
@@ -41,11 +36,8 @@ public class DestinationMapper {
                 .createdBy(agent)
                 .build();
     }
-
     public static DestinationResponseDTO toDTO(DestinationPackage entity) {
-
-        PackageInclusionDetails inclusion = entity.getInclusionDetails();
-
+        PackageInclusionDetails inc = entity.getInclusionDetails();
         return DestinationResponseDTO.builder()
                 .id(entity.getId())
                 .title(entity.getTitle())
@@ -62,22 +54,20 @@ public class DestinationMapper {
                 .maxPeople(entity.getMaxPeople())
                 .ratingAverage(entity.getRatingAverage())
                 .totalReviews(entity.getTotalReviews())
-                .status(entity.getStatus())
+                .status(entity.getStatus()) // pass enum directly
                 .imageUrls(entity.getImageUrls())
                 .agentId(entity.getCreatedBy() != null ? entity.getCreatedBy().getId() : null)
                 .agentEmail(entity.getCreatedBy() != null ? entity.getCreatedBy().getEmail() : null)
-
-                .includesHotel(inclusion != null ? inclusion.getIncludesHotel() : false)
-                .includesFlight(inclusion != null ? inclusion.getIncludesFlight() : false)
-                .includesFood(inclusion != null ? inclusion.getIncludesFood() : false)
-                .includesTransport(inclusion != null ? inclusion.getIncludesTransport() : false)
-                .hotelCost(inclusion != null ? inclusion.getHotelCost() : null)
-                .flightCost(inclusion != null ? inclusion.getFlightCost() : null)
-                .foodCost(inclusion != null ? inclusion.getFoodCost() : null)
-                .transportCost(inclusion != null ? inclusion.getTransportCost() : null)
-                .hotelType(inclusion != null ? inclusion.getHotelType() : null)
-                .flightClass(inclusion != null ? inclusion.getFlightClass() : null)
-
+                .includesHotel(inc != null && inc.getIncludesHotel() != null ? inc.getIncludesHotel() : false)
+                .includesFlight(inc != null && inc.getIncludesFlight() != null ? inc.getIncludesFlight() : false)
+                .includesFood(inc != null && inc.getIncludesFood() != null ? inc.getIncludesFood() : false)
+                .includesTransport(inc != null && inc.getIncludesTransport() != null ? inc.getIncludesTransport() : false)
+                .hotelCost(inc != null ? inc.getHotelCost() : null)
+                .flightCost(inc != null ? inc.getFlightCost() : null)
+                .foodCost(inc != null ? inc.getFoodCost() : null)
+                .transportCost(inc != null ? inc.getTransportCost() : null)
+                .hotelType(inc != null ? inc.getHotelType() : null)
+                .flightClass(inc != null ? inc.getFlightClass() : null)
                 .build();
     }
 }

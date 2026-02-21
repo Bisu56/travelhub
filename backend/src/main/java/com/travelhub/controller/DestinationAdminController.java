@@ -1,14 +1,9 @@
 package com.travelhub.controller;
 
-import com.travelhub.Dtos.DestinationRequestDTO;
-import com.travelhub.Dtos.DestinationResponseDTO;
-import com.travelhub.Mapper.DestinationMapper;
+import com.travelhub.Dtos.*;
 import com.travelhub.entity.User;
-import com.travelhub.service.DestinationAdminService;
-import com.travelhub.service.DestinationBookingService;
+import com.travelhub.service.DestinationService;
 import com.travelhub.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,7 +11,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin/destinations")
@@ -24,88 +18,43 @@ import java.util.stream.Collectors;
 @PreAuthorize("hasRole('ADMIN')")
 public class DestinationAdminController {
 
-    private final DestinationAdminService service;
+    private final DestinationService destinationService;
     private final UserService userService;
-    private final DestinationBookingService bookingService;
-
-    public record RejectionRequest(String reason) {}
-
-    @PutMapping("/{id}")
-    public ResponseEntity<DestinationResponseDTO> edit(
-            @PathVariable Long id,
-            @Valid @RequestBody DestinationRequestDTO request,
-            Authentication auth,
-            HttpServletRequest httpRequest
-    ) {
-        User admin = userService.getCurrentUser(auth);
-        String ip = httpRequest.getRemoteAddr();
-        return ResponseEntity.ok(
-                DestinationMapper.toDTO(service.edit(id, request, admin, ip))
-        );
-    }
-
-    @PostMapping("/{id}/approve")
-    public ResponseEntity<DestinationResponseDTO> approve(
-            @PathVariable Long id,
-            Authentication auth,
-            HttpServletRequest httpRequest
-    ) {
-        User admin = userService.getCurrentUser(auth);
-        String ip = httpRequest.getRemoteAddr();
-        return ResponseEntity.ok(
-                DestinationMapper.toDTO(service.approve(id, admin, ip))
-        );
-    }
-
-    @PostMapping("/{id}/reject")
-    public ResponseEntity<DestinationResponseDTO> reject(
-            @PathVariable Long id,
-            @RequestBody RejectionRequest request,
-            Authentication auth,
-            HttpServletRequest httpRequest
-    ) {
-        User admin = userService.getCurrentUser(auth);
-        String ip = httpRequest.getRemoteAddr();
-        return ResponseEntity.ok(
-                DestinationMapper.toDTO(service.reject(id, request.reason(), admin, ip))
-        );
-    }
-
-    @PostMapping("/{id}/publish")
-    public ResponseEntity<DestinationResponseDTO> publish(
-            @PathVariable Long id,
-            Authentication auth,
-            HttpServletRequest httpRequest
-    ) {
-        User admin = userService.getCurrentUser(auth);
-        String ip = httpRequest.getRemoteAddr();
-        return ResponseEntity.ok(
-                DestinationMapper.toDTO(service.publish(id, admin, ip))
-        );
-    }
 
     @GetMapping("/pending")
-    public ResponseEntity<List<DestinationResponseDTO>> pending() {
-        List<DestinationResponseDTO> list = service.listPendingPackages()
-                .stream()
-                .map(DestinationMapper::toDTO)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(list);
+    public ResponseEntity<List<DestinationResponseDTO>> listPending() {
+        return ResponseEntity.ok(destinationService.listPendingPackages());
     }
 
-    @PostMapping("/booking/{bookingId}/confirm")
-    public ResponseEntity<?> confirmBooking(@PathVariable Long bookingId,
-                                            Authentication auth) {
+    @PostMapping("/{packageId}/approve")
+    public ResponseEntity<DestinationResponseDTO> approve(@PathVariable Long packageId,
+                                                          @RequestHeader(value = "X-Forwarded-For", required = false) String ip,
+                                                          Authentication auth) {
         User admin = userService.getCurrentUser(auth);
-        bookingService.confirmBooking(bookingId, admin);
-        return ResponseEntity.ok().body("{\"message\":\"Booking confirmed\"}");
+        return ResponseEntity.ok(destinationService.approvePackage(admin, packageId, ip));
     }
 
-    @PostMapping("/booking/{bookingId}/complete")
-    public ResponseEntity<?> completeBooking(@PathVariable Long bookingId,
-                                             Authentication auth) {
+    @PostMapping("/{packageId}/reject")
+    public ResponseEntity<DestinationResponseDTO> reject(@PathVariable Long packageId,
+                                                         @RequestBody RejectionRequest request,
+                                                         @RequestHeader(value = "X-Forwarded-For", required = false) String ip,
+                                                         Authentication auth) {
         User admin = userService.getCurrentUser(auth);
-        bookingService.completeBooking(bookingId, admin);
-        return ResponseEntity.ok().body("{\"message\":\"Booking completed\"}");
+        return ResponseEntity.ok(destinationService.rejectPackage(admin, packageId, request.getReason(), ip));
+    }
+
+    @PostMapping("/{packageId}/publish")
+    public ResponseEntity<DestinationResponseDTO> publish(@PathVariable Long packageId,
+                                                          @RequestHeader(value = "X-Forwarded-For", required = false) String ip,
+                                                          Authentication auth) {
+        User admin = userService.getCurrentUser(auth);
+        return ResponseEntity.ok(destinationService.publishPackage(admin, packageId, ip));
+    }
+
+    // Admin can view all bookings
+    @GetMapping("/bookings")
+    public ResponseEntity<List<DestinationBookingResponseDTO>> allBookings(Authentication auth) {
+        User admin = userService.getCurrentUser(auth);
+        return ResponseEntity.ok(destinationService.getAllBookings());
     }
 }

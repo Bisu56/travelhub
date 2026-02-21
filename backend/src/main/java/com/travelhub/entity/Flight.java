@@ -1,21 +1,18 @@
 package com.travelhub.entity;
 
-import com.travelhub.entity.enums.DestinationType;
+import com.travelhub.entity.enums.FlightClassType;
 import com.travelhub.entity.enums.PackageStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
+@Entity
+@Table(name = "flights")
 @Getter
 @Setter
-@Entity
-@Table(name = "flights",
-        indexes = {
-                @Index(name = "idx_origin_destination", columnList = "origin,destination"),
-                @Index(name = "idx_departure_time", columnList = "departure_time")
-        })
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -25,61 +22,55 @@ public class Flight {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String flightNumber;
-
-    @Column(nullable = false)
-    private String airlineName;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private DestinationType destinationType; // DOMESTIC / FOREIGN
-
-    @Column(nullable = false)
     private String origin;
-
-    @Column(nullable = false)
     private String destination;
 
-    @Column(name = "departure_time", nullable = false)
     private LocalDateTime departureTime;
-
-    @Column(name = "arrival_time", nullable = false)
     private LocalDateTime arrivalTime;
 
-    @Column(nullable = false)
-    private Integer durationMinutes;
+    @Enumerated(EnumType.STRING)
+    private FlightClassType flightClass;
 
-    // Cabin Class Pricing
-    @Column(precision = 12, scale = 2)
-    private BigDecimal economyPrice;
+    private Integer availableSeats;
 
-    @Column(precision = 12, scale = 2)
-    private BigDecimal premiumEconomyPrice;
-
-    @Column(precision = 12, scale = 2)
-    private BigDecimal businessPrice;
-
-    @Column(precision = 12, scale = 2)
-    private BigDecimal firstClassPrice;
-
-    // Seat Counters Per Class
-    private Integer economyTotalSeats;
-    private Integer economyAvailableSeats;
-
-    private Integer premiumEconomyTotalSeats;
-    private Integer premiumEconomyAvailableSeats;
-
-    private Integer businessTotalSeats;
-    private Integer businessAvailableSeats;
-
-    private Integer firstClassTotalSeats;
-    private Integer firstClassAvailableSeats;
+    private BigDecimal basePrice;
+    private BigDecimal finalPrice;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private PackageStatus status; // Reusing your lifecycle: DRAFT → APPROVED → PUBLISHED
+    private PackageStatus status;
 
-    @Column(nullable = false)
     private Boolean isDeleted = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "agent_id")
+    private User createdBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "approved_by")
+    private User approvedBy;
+
+    private String rejectionReason;
+
+    private LocalDateTime approvedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+        if (status == null) status = PackageStatus.DRAFT;
+        calculateFinalPrice();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+        calculateFinalPrice();
+    }
+
+    public void calculateFinalPrice() {
+        this.finalPrice = basePrice != null ? basePrice : BigDecimal.ZERO;
+    }
 }
