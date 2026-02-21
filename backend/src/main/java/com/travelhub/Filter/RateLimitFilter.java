@@ -1,4 +1,5 @@
 package com.travelhub.Filter;
+
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Refill;
@@ -22,7 +23,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private Bucket resolveBucket(String key) {
         return cache.computeIfAbsent(key, k -> Bucket.builder()
-                .addLimit(Bandwidth.classic(10, Refill.greedy(10, Duration.ofMinutes(1))))
+                .addLimit(Bandwidth.classic(5, Refill.greedy(5, Duration.ofMinutes(1))))
                 .build());
     }
 
@@ -31,15 +32,27 @@ public class RateLimitFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        String ip = request.getRemoteAddr();
-        Bucket bucket = resolveBucket(ip);
+        String path = request.getRequestURI();
 
-        if (bucket.tryConsume(2)) {
-            filterChain.doFilter(request, response);
+        boolean isOtpEndpoint = path.equals("/api/auth/verify/phone") ||
+                path.equals("/api/auth/verify/email") ||
+                path.equals("/api/auth/resend/phone-otp") ||
+                path.equals("/api/auth/resend/email-otp");
+
+        if (isOtpEndpoint) {
+            String ip = request.getRemoteAddr();
+            Bucket bucket = resolveBucket(ip);
+
+            if (bucket.tryConsume(1)) {
+                filterChain.doFilter(request, response);
+            } else {
+                response.setStatus(429);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\": \"Too many requests\", \"message\": \"OTP request limit exceeded. Please try again in 1 minute.\"}");
+            }
         } else {
-            response.setStatus(429);
-            response.getWriter().write("Rate limit exceeded");
-
+            //  For all other endpoints (Swagger, Login, Flights, etc.), just let them through
+            filterChain.doFilter(request, response);
         }
     }
 }
