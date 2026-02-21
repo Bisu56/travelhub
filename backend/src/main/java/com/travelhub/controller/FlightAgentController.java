@@ -75,7 +75,7 @@ public class FlightAgentController {
         return ResponseEntity.ok(flightService.getBookingsForAgent(agent));
     }
 
-    @PostMapping("/booking/{bookingId}/confirm")
+    @PostMapping("/bookings/{bookingId}/confirm")
     public ResponseEntity<Void> confirmBooking(
             @PathVariable Long bookingId,
             Authentication auth) {
@@ -85,7 +85,7 @@ public class FlightAgentController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/booking/{bookingId}/complete")
+    @PostMapping("/bookings/{bookingId}/complete")
     public ResponseEntity<Void> completeBooking(
             @PathVariable Long bookingId,
             Authentication auth) {
@@ -95,7 +95,7 @@ public class FlightAgentController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/booking/{bookingId}/reject")
+    @PostMapping("/bookings/{bookingId}/reject")
     public ResponseEntity<Void> rejectBooking(
             @PathVariable Long bookingId,
             @RequestBody BookingRejectionRequest request,
