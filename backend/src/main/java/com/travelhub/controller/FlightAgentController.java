@@ -3,6 +3,7 @@ package com.travelhub.controller;
 import com.travelhub.Dtos.*;
 import com.travelhub.entity.Flight;
 import com.travelhub.entity.User;
+import com.travelhub.entity.enums.FlightClassType;
 import com.travelhub.service.FlightService;
 import com.travelhub.service.UserService;
 import jakarta.validation.Valid;
@@ -29,7 +30,10 @@ public class FlightAgentController {
             Authentication auth) {
 
         User agent = userService.getCurrentUser(auth);
-        return ResponseEntity.ok(flightService.createFlight(agent, dto));
+        // Pass classPrices map from DTO
+        return ResponseEntity.ok(
+                flightService.createFlight(agent, dto, dto.getClassPrices())
+        );
     }
 
     @PutMapping(value = "/{flightId}", consumes = "application/json")
@@ -39,7 +43,9 @@ public class FlightAgentController {
             Authentication auth) {
 
         User agent = userService.getCurrentUser(auth);
-        return ResponseEntity.ok(flightService.updateFlight(agent, flightId, dto));
+        return ResponseEntity.ok(
+                flightService.updateFlight(agent, flightId, dto, dto.getClassPrices())
+        );
     }
 
     @PostMapping("/{flightId}/submit")
@@ -106,6 +112,7 @@ public class FlightAgentController {
 
         User agent = userService.getCurrentUser(auth);
         List<Flight> flights = flightService.getFlightsByAgent(agent);
+
         List<ReviewResponseDTO> reviews = flights.stream()
                 .flatMap(f -> flightService.getReviews(f.getId()).stream())
                 .toList();

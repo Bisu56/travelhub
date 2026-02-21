@@ -6,7 +6,6 @@ import com.travelhub.entity.*;
 public class FlightMapper {
 
     public static Flight toEntity(FlightRequestDTO dto, User agent) {
-
         return Flight.builder()
                 .airlineName(dto.getAirlineName())
                 .flightNumber(dto.getFlightNumber())
@@ -17,16 +16,14 @@ public class FlightMapper {
                 .type(dto.getType())
                 .departureDate(dto.getDepartureDate())
                 .arrivalDate(dto.getArrivalDate())
-                .basePrice(dto.getBasePrice())
-                .discountPercentage(dto.getDiscountPercentage())
                 .totalSeats(dto.getTotalSeats())
                 .imageUrls(dto.getImageUrls())
+                .classPrices(dto.getClassPrices())
                 .createdBy(agent)
                 .build();
     }
 
     public static FlightResponseDTO toDTO(Flight f) {
-
         return FlightResponseDTO.builder()
                 .id(f.getId())
                 .airlineName(f.getAirlineName())
@@ -38,18 +35,17 @@ public class FlightMapper {
                 .type(f.getType())
                 .departureDate(f.getDepartureDate())
                 .arrivalDate(f.getArrivalDate())
-                .basePrice(f.getBasePrice())
-                .discountPercentage(f.getDiscountPercentage())
-                .finalPrice(f.getFinalPrice())
                 .totalSeats(f.getTotalSeats())
-                .ratingAverage(f.getRatingAverage())
-                .totalReviews(f.getTotalReviews())
                 .status(f.getStatus())
                 .imageUrls(f.getImageUrls())
+                .classPrices(f.getClassPrices())
+                .ratingAverage(f.getRatingAverage())
+                .totalReviews(f.getTotalReviews())
                 .agentId(f.getCreatedBy() != null ? f.getCreatedBy().getId() : null)
                 .agentEmail(f.getCreatedBy() != null ? f.getCreatedBy().getEmail() : null)
                 .build();
     }
+
 
     public static FlightBookingResponseDTO bookingToDTO(FlightBooking booking) {
 
