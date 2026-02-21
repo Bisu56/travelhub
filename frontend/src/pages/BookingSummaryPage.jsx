@@ -42,6 +42,11 @@ const BookingSummaryPage = ({ serviceData }) => {
         onChange={(e) => setSpecialRequest(e.target.value)}
       />
 
+      <p>
+        Cancellation allowed within 24 hours for full refund.
+        After that partial charges may apply.
+      </p>
+
       <button onClick={handleSubmit}>Confirm Booking</button>
     </div>
   );
