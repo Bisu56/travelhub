@@ -139,11 +139,12 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Phone is already verified.");
         }
 
-        if (!otpService.tryConsumePhoneOtpBucket(user)) {
-            return ResponseEntity.status(429).body("Too many requests. Try again later.");
+        String otp = otpService.sendPhoneOtp(user);
+        if (otp == null) {
+            return ResponseEntity.status(429)
+                    .body("Too many OTP requests. Try again later.");
         }
 
-        otpService.sendPhoneOtp(user);
         return ResponseEntity.ok("Phone OTP resent successfully.");
 
 

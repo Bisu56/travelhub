@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/api/admin", produces = "application/json")
+@RequestMapping(value = "/api/admin/vehicles", produces = "application/json")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class VehicleAdminController {
@@ -21,12 +21,12 @@ public class VehicleAdminController {
     private final VehicleService vehicleService;
     private final UserService userService;
 
-    @GetMapping("/vehicles/pending")
+    @GetMapping("/pending")
     public ResponseEntity<List<VehicleResponseDTO>> listPendingVehicles() {
         return ResponseEntity.ok(vehicleService.listPendingVehicles());
     }
 
-    @PostMapping("/vehicles/{vehicleId}/approve")
+    @PostMapping("/{vehicleId}/approve")
     public ResponseEntity<VehicleResponseDTO> approveVehicle(
             @PathVariable Long vehicleId,
             @RequestHeader(value = "X-Forwarded-For", required = false) String ip,
@@ -36,7 +36,7 @@ public class VehicleAdminController {
         return ResponseEntity.ok(vehicleService.approveVehicle(admin, vehicleId, ip));
     }
 
-    @PostMapping("/vehicles/{vehicleId}/reject")
+    @PostMapping("/{vehicleId}/reject")
     public ResponseEntity<VehicleResponseDTO> rejectVehicle(
             @PathVariable Long vehicleId,
             @RequestBody RejectionRequest request,
@@ -47,7 +47,7 @@ public class VehicleAdminController {
         return ResponseEntity.ok(vehicleService.rejectVehicle(admin, vehicleId, request.getReason(), ip));
     }
 
-    @PostMapping("/vehicles/{vehicleId}/publish")
+    @PostMapping("/{vehicleId}/publish")
     public ResponseEntity<VehicleResponseDTO> publishVehicle(
             @PathVariable Long vehicleId,
             @RequestHeader(value = "X-Forwarded-For", required = false) String ip,
@@ -57,7 +57,7 @@ public class VehicleAdminController {
         return ResponseEntity.ok(vehicleService.approveVehicle(admin, vehicleId, ip));
     }
 
-    @PostMapping("/vehicles/{vehicleId}/delete")
+    @PostMapping("/{vehicleId}/delete")
     public ResponseEntity<Void> deleteVehicle(
             @PathVariable Long vehicleId,
             @RequestHeader(value = "X-Forwarded-For", required = false) String ip,

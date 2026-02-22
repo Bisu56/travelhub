@@ -53,6 +53,7 @@ public class User {
         createdAt = Instant.now();
         updatedAt = Instant.now();
     }
+    @Builder.Default
     @Column(nullable = false)
     private Boolean active = true;
 

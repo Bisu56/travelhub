@@ -34,22 +34,17 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        boolean isOtpEndpoint = path.equals("/api/auth/verify/phone") ||
-                path.equals("/api/auth/verify/email") ||
-                path.equals("/api/auth/resend/phone-otp") ||
-                path.equals("/api/auth/resend/email-otp");
-
+        boolean isOtpEndpoint = path.contains("/verify") || path.contains("/resend");
         if (isOtpEndpoint) {
-            String ip = request.getRemoteAddr();
-            Bucket bucket = resolveBucket(ip);
-
-            if (bucket.tryConsume(1)) {
-                filterChain.doFilter(request, response);
-            } else {
+            String key = request.getRemoteAddr(); // fallback IP
+            Bucket bucket = resolveBucket(key);
+            if (!bucket.tryConsume(1)) {
                 response.setStatus(429);
-                response.setContentType("application/json");
-                response.getWriter().write("{\"error\": \"Too many requests\", \"message\": \"OTP request limit exceeded. Please try again in 1 minute.\"}");
+                response.getWriter().write("{\"error\":\"Too many requests\"}");
+                return;
             }
+
+            filterChain.doFilter(request, response);
         } else {
             //  For all other endpoints (Swagger, Login, Flights, etc.), just let them through
             filterChain.doFilter(request, response);
