@@ -39,6 +39,9 @@ import AgentPackages from '../pages/agent/AgentPackage';
 import CreatePackage from '../pages/agent/CreatePackages';
 import EditPackage from '../pages/agent/EditPackage';
 import AgentEarningsDashboard from '../features/earnings/pages/AgentEarningsDashboard';
+import NotificationHistory from '../features/notifications/pages/NotificationHistory';
+import NotificationSettings from '../features/notifications/pages/NotificationSettings';
+import EmailTemplatePreview from '../features/notifications/pages/EmailTemplatePreview';
 
 function AppRoutes() {
   return (
@@ -164,6 +167,33 @@ function AppRoutes() {
               <AgentLayout>
                 <AgentEarningsDashboard />
               </AgentLayout>
+          }
+        />
+
+        <Route
+          path="/notifications"
+          element={
+              <Layout>
+                <NotificationHistory />
+              </Layout>
+          }
+        />
+
+        <Route
+          path="/settings/notifications"
+          element={
+              <Layout>
+                <NotificationSettings />
+              </Layout>
+          }
+        />
+
+        <Route
+          path="/admin/email-preview"
+          element={
+              <AdminLayout>
+                <EmailTemplatePreview />
+              </AdminLayout>
           }
         />
 

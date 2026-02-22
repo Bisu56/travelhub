@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { FiMenu, FiX, FiUser, FiLogOut, FiChevronDown, FiHome, FiBox, FiMap, FiTruck } from 'react-icons/fi'
+import NotificationBell from '../../features/notifications/components/NotificationBell'
 
 const navLinks = [
   { to: '/flights', label: 'Flights', icon: <FiTruck size={18} /> },
@@ -47,6 +48,7 @@ function Header() {
           </div>
 
           <div className="hidden md:flex items-center gap-3 lg:gap-4">
+            {user && <NotificationBell userId={user.id} />}
             {user ? (
               <div className="relative">
                 <button
