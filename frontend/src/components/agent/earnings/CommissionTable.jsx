@@ -1,4 +1,6 @@
 const CommissionTable = ({ commissions }) => {
+  if (!commissions || commissions.length === 0) return <p>No commissions yet</p>;
+  
   return (
     <table border="1">
       <thead>

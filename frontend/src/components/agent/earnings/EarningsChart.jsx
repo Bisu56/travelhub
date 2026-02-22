@@ -21,6 +21,8 @@ ChartJS.register(
 );
 
 const EarningsChart = ({ commissions }) => {
+  if (!commissions || commissions.length === 0) return <p>No earnings data yet</p>;
+  
   const data = {
     labels: commissions.map((c) => c.bookingDate),
     datasets: [
