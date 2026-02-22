@@ -23,7 +23,6 @@ public class ReviewService {
     private final DestinationPackageRepository packageRepository;
 
     public Review addReview(Long packageId, Integer rating, String comment, User user) {
-        // Only allow completed bookings
         boolean hasCompleted = bookingRepository
                 .findByUserIdAndDestinationPackageIdAndBookingStatus(
                         user.getId(), packageId, BookingStatus.COMPLETED)

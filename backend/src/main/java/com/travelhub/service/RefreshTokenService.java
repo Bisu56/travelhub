@@ -17,10 +17,8 @@ public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final AuditService auditService;
 
-    // 1 day duration in milliseconds
     private final long refreshTokenDuration = 86400000;
 
-    // ---------------- Create / Issue Token ----------------
     public String createRefreshToken(User user) {
         RefreshToken token = RefreshToken.builder()
                 .token(UUID.randomUUID().toString())
@@ -34,7 +32,6 @@ public class RefreshTokenService {
         return token.getToken();
     }
 
-    // ---------------- Revoke / Invalidate Token ----------------
     public void revokeRefreshToken(String token) {
         refreshTokenRepository.findByToken(token).ifPresent(t -> {
             t.setRevoked(true);
@@ -45,14 +42,12 @@ public class RefreshTokenService {
         });
     }
 
-    // ---------------- Validate Token ----------------
     public boolean validateRefreshToken(String token) {
         return refreshTokenRepository.findByToken(token)
                 .filter(t -> !t.isRevoked() && !t.isUsed() && t.getExpiryDate().isAfter(Instant.now()))
                 .isPresent();
     }
 
-    // ---------------- Get User From Token ----------------
     public User getUserFromToken(String token) {
         return refreshTokenRepository.findByToken(token)
                 .map(RefreshToken::getUser)

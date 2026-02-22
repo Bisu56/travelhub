@@ -24,7 +24,6 @@ public class AuthController {
     private final OtpService otpService;
     private final UserService userService;
 
-    // ------------------- Registration -------------------
     @PostMapping("/register/user")
     public ResponseEntity<String> registerUser(@RequestBody @Valid RegisterRequest request) {
         User user = authService.registerUser(request.getEmail(), request.getPhone(), request.getPassword());
@@ -51,7 +50,6 @@ public class AuthController {
         return ResponseEntity.ok("Registration successful. OTP sent. Verification required.");
     }
 
-    // ------------------- OTP Verification -------------------
     @PostMapping("/verify/email")
     public ResponseEntity<String> verifyEmail(@RequestBody Map<String, String> request) {
         String email = request.get("email");
@@ -80,7 +78,6 @@ public class AuthController {
                 : ResponseEntity.badRequest().body("Invalid or expired OTP");
     }
 
-    // ------------------- Resend OTP -------------------
     @PostMapping("/resend/email-otp")
     public ResponseEntity<String> resendEmailOtp(@RequestBody Map<String, String> request) {
         User user = userService.getUserByEmail(request.get("email"))
@@ -103,7 +100,6 @@ public class AuthController {
         return ResponseEntity.ok("Phone OTP resent successfully");
     }
 
-    // ------------------- Login / Logout -------------------
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody Map<String, String> request) {
         String loginId = request.getOrDefault("emailOrPhone",
@@ -121,7 +117,6 @@ public class AuthController {
                 : ResponseEntity.badRequest().body("Invalid or already revoked token");
     }
 
-    // ------------------- Forgot Password -------------------
     @PostMapping("/forgot-password/request")
     public ResponseEntity<String> forgotPasswordRequest(@RequestBody Map<String, String> request) {
         String emailOrPhone = request.get("emailOrPhone");
@@ -163,7 +158,6 @@ public class AuthController {
         return ResponseEntity.ok("Password reset successfully");
     }
 
-    // ------------------- Profile -------------------
     @GetMapping("/profile")
     public ResponseEntity<UserProfileDTO> getProfile(Authentication auth) {
         User user = userService.getCurrentUser(auth);

@@ -27,7 +27,6 @@ public class AuthService {
 
     private final Map<String, PasswordResetToken> passwordResetTokenStore = new HashMap<>();
 
-    // ---------------- Registration ----------------
     public User registerUser(String email, String phone, String password) {
         validateUniqueUser(email, phone);
         User user = User.builder()
@@ -85,7 +84,6 @@ public class AuthService {
         if (phone != null && userRepository.existsByPhone(phone)) throw new RuntimeException("Phone already exists");
     }
 
-    // ---------------- Login / Logout ----------------
     public AuthResponse login(String loginId, String password) {
         User user = userRepository.findByEmailOrPhone(loginId, loginId)
                 .orElseThrow(() -> new RuntimeException("Invalid credentials"));
@@ -120,7 +118,6 @@ public class AuthService {
         return false;
     }
 
-    // ---------------- Password Management ----------------
     public void changePassword(User user, String newPassword) {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
@@ -135,7 +132,6 @@ public class AuthService {
         refreshTokenService.revokeAllUserTokens(user);
     }
 
-    // ---------------- Forgot Password / OTP Flow ----------------
     public String createPasswordResetToken(User user) {
         String token = UUID.randomUUID().toString();
         PasswordResetToken prt = new PasswordResetToken(token, user.getId(), Instant.now().plusSeconds(600)); // 10 min
@@ -167,7 +163,6 @@ public class AuthService {
         return jwtService.generateAccessToken(user);
     }
 
-    // ---------------- Internal Class ----------------
     private static class PasswordResetToken {
         private final String token;
         private final Long userId;
