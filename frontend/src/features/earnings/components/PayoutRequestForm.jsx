@@ -12,7 +12,7 @@ const PayoutRequestForm = () => {
       await createPayoutRequest({ amount: Number(amount) });
       alert("Payout request submitted");
       setAmount("");
-    } catch (error) {
+    } catch {
       alert("Failed to submit payout request");
     } finally {
       setLoading(false);

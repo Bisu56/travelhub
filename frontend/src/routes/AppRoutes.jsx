@@ -25,7 +25,7 @@ import PaymentHistoryPage from "../pages/payments/PaymentHistoryPage";
 // Admin layout, guard & pages
 import PermissionGuard from '../hoc/PermissionGuard';
 import AdminLayout from '../components/layout/AdminLayout';
-import AdminDashboard from '../pages/admin/AdminDashboard';
+import AdminDashboard from '../features/analytics/pages/AdminDashboard';
 import AgentApproval from '../pages/admin/AgentApproval';
 import Destination from '../pages/admin/Destination';
 import AdminReviewModeration from '../features/reviews/pages/AdminReviewModeration';

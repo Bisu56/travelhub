@@ -25,7 +25,7 @@ const AdminPayoutApproval = () => {
     try {
       await approvePayout(id);
       fetchPayouts();
-    } catch (error) {
+    } catch {
       alert("Failed to approve payout");
     }
   };
@@ -34,7 +34,7 @@ const AdminPayoutApproval = () => {
     try {
       await rejectPayout(id);
       fetchPayouts();
-    } catch (error) {
+    } catch {
       alert("Failed to reject payout");
     }
   };

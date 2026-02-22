@@ -11,7 +11,7 @@ const AdminCommissionManagement = () => {
     try {
       await calculateCommission();
       setMessage("Commissions calculated successfully");
-    } catch (error) {
+    } catch {
       setMessage("Failed to calculate commissions");
     } finally {
       setLoading(false);
