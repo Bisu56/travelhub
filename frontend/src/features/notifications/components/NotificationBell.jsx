@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getUserNotifications } from "../services/notificationApi";
 import NotificationDropdown from "./NotificationDropdown";
 
@@ -6,20 +6,47 @@ const NotificationBell = ({ userId }) => {
   const [notifications, setNotifications] = useState([]);
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    if (userId) {
-      fetchNotifications();
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const res = await getUserNotifications(userId);
+      return res.data;
+    } catch (error) {
+      console.error("Failed to fetch notifications", error);
+      return [];
     }
   }, [userId]);
 
-  const fetchNotifications = async () => {
-    try {
-      const res = await getUserNotifications(userId);
-      setNotifications(res.data);
-    } catch (error) {
-      console.error("Failed to fetch notifications", error);
+  useEffect(() => {
+    let isMounted = true;
+
+    if (userId) {
+      fetchNotifications().then((data) => {
+        if (isMounted) {
+          setNotifications(data);
+        }
+      });
     }
-  };
+
+    return () => {
+      isMounted = false;
+    };
+  }, [userId, fetchNotifications]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (userId) {
+      fetchNotifications().then(() => {
+        if (isMounted) {
+          // State update will only happen if component is still mounted
+        }
+      });
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [userId, fetchNotifications]);
 
   const unreadCount = notifications.filter(n => !n.read_status).length;
 
