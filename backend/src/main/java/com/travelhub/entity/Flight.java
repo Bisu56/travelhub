@@ -2,6 +2,7 @@ package com.travelhub.entity;
 
 import com.travelhub.entity.enums.DestinationType;
 import com.travelhub.entity.enums.PackageStatus;
+import com.travelhub.entity.enums.FlightClassType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,12 +10,10 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Entity
-@Table(name = "flights",
-        indexes = {
-                @Index(name = "idx_route_type", columnList = "departureCity,arrivalCity,type")
-        })
+@Table(name = "flights")
 @Getter
 @Setter
 @Builder
@@ -41,76 +40,39 @@ public class Flight {
     private LocalDate departureDate;
     private LocalDate arrivalDate;
 
-    private BigDecimal basePrice;
-    private BigDecimal discountPercentage;
-    private BigDecimal finalPrice;
-
     private Integer totalSeats;
 
     @Enumerated(EnumType.STRING)
     private PackageStatus status;
 
-    private Boolean isDeleted = false;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "agent_id")
+    @ManyToOne
     private User createdBy;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "approved_by")
+    @ManyToOne
     private User approvedBy;
 
     private Instant approvedAt;
-    private String rejectionReason;
 
-    private Instant createdAt;
-    private Instant updatedAt;
+    private Boolean isDeleted = false;
 
     @ElementCollection
-    @CollectionTable(name = "flight_images",
-            joinColumns = @JoinColumn(name = "flight_id"))
-    @Column(name = "image_url", length = 1000)
+    @CollectionTable(name = "flight_class_prices", joinColumns = @JoinColumn(name = "flight_id"))
+    @MapKeyEnumerated(EnumType.STRING)
+    @MapKeyColumn(name = "class_type")
+    @Column(name = "price")
+    private Map<FlightClassType, BigDecimal> classPrices;
+
     private List<String> imageUrls;
 
-    private Double ratingAverage = 0.0;
-    private Long totalReviews = 0L;
+    private Double ratingAverage;
+    private Long totalReviews;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = Instant.now();
-        updatedAt = Instant.now();
-        if (status == null) status = PackageStatus.DRAFT;
-        calculateFinalPrice();
-    }
+    private String rejectionReason;
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = Instant.now();
-        calculateFinalPrice();
-    }
-
-    public void calculateFinalPrice() {
-        if (basePrice == null) {
-            throw new IllegalArgumentException("Base price required");
+    public BigDecimal getPriceByClass(FlightClassType flightClass) {
+        if (classPrices == null || !classPrices.containsKey(flightClass)) {
+            throw new RuntimeException("Price not set for class: " + flightClass);
         }
-
-        BigDecimal total = basePrice;
-
-        if (discountPercentage != null &&
-                discountPercentage.compareTo(BigDecimal.ZERO) > 0) {
-
-            BigDecimal discount =
-                    total.multiply(discountPercentage)
-                            .divide(BigDecimal.valueOf(100));
-
-            total = total.subtract(discount);
-        }
-
-        this.finalPrice = total;
-    }
-
-    public void updateRating(Double avg, Long total) {
-        this.ratingAverage = avg;
-        this.totalReviews = total;
+        return classPrices.get(flightClass);
     }
 }

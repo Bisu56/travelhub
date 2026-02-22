@@ -1,22 +1,18 @@
 package com.travelhub.entity;
 
 import com.travelhub.entity.enums.BookingStatus;
-import com.travelhub.entity.enums.FlightClassType;
 import com.travelhub.entity.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.math.BigDecimal;
-import java.time.Instant;
 
 @Entity
-@Table(name = "flight_bookings")
-@Getter
-@Setter
+@Table(name = "vehicle_bookings")
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FlightBooking {
+public class VehicleBooking {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,27 +22,27 @@ public class FlightBooking {
     private User user;
 
     @ManyToOne
-    private Flight flight;
+    private VehicleOffering vehicle;
 
-    private Integer passengers;
+    @Column(nullable = false)
+    private Integer seatCount;
 
-    @Enumerated(EnumType.STRING)
-    private FlightClassType flightClass;
+    @Column(nullable = false)
+    private Integer days;
 
+    @Column(nullable = false)
+    private Boolean fullVehicle;
+
+    @Column(nullable = false)
     private BigDecimal totalPrice;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private BookingStatus bookingStatus;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PaymentStatus paymentStatus;
 
-    private Instant createdAt;
-
-    @PrePersist
-    void onCreate() {
-        createdAt = Instant.now();
-    }
     private String rejectionReason;
 }
-

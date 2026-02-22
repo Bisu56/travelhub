@@ -31,20 +31,12 @@ public class FlightUserController {
             @RequestParam(required = false) String arrivalCity,
             @RequestParam(required = false) DestinationType type,
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            LocalDate departureDate,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice) {
 
         return ResponseEntity.ok(
-                flightService.searchFlights(
-                        departureCity,
-                        arrivalCity,
-                        type,
-                        departureDate,
-                        minPrice,
-                        maxPrice
-                )
+                flightService.searchFlights(departureCity, arrivalCity, type, departureDate, minPrice, maxPrice)
         );
     }
 
@@ -56,14 +48,7 @@ public class FlightUserController {
 
         User user = userService.getCurrentUser(auth);
 
-        return ResponseEntity.ok(
-                flightService.bookFlight(
-                        user,
-                        flightId,
-                        request.getPassengers(),
-                        request.getFlightClass()
-                )
-        );
+        return ResponseEntity.ok(flightService.bookFlight(user, flightId, request));
     }
 
     @PostMapping("/booking/{bookingId}/cancel")
@@ -81,9 +66,7 @@ public class FlightUserController {
             Authentication auth) {
 
         User user = userService.getCurrentUser(auth);
-        return ResponseEntity.ok(
-                flightService.getUserBookings(user)
-        );
+        return ResponseEntity.ok(flightService.getUserBookings(user));
     }
 
     @PostMapping("/{flightId}/review")
@@ -93,23 +76,13 @@ public class FlightUserController {
             Authentication auth) {
 
         User user = userService.getCurrentUser(auth);
-
-        return ResponseEntity.ok(
-                flightService.addReview(
-                        user,
-                        flightId,
-                        request.getRating(),
-                        request.getComment()
-                )
-        );
+        return ResponseEntity.ok(flightService.addReview(user, flightId, request.getRating(), request.getComment()));
     }
 
     @GetMapping("/{flightId}/reviews")
     public ResponseEntity<List<ReviewResponseDTO>> getReviews(
             @PathVariable Long flightId) {
 
-        return ResponseEntity.ok(
-                flightService.getReviews(flightId)
-        );
+        return ResponseEntity.ok(flightService.getReviews(flightId));
     }
 }

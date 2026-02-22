@@ -2,12 +2,14 @@ package com.travelhub.Dtos;
 
 import com.travelhub.entity.enums.DestinationType;
 import com.travelhub.entity.enums.PackageStatus;
+import com.travelhub.entity.enums.FlightClassType;
 import lombok.Builder;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -29,14 +31,7 @@ public class FlightResponseDTO {
     private LocalDate departureDate;
     private LocalDate arrivalDate;
 
-    private BigDecimal basePrice;
-    private BigDecimal discountPercentage;
-    private BigDecimal finalPrice;
-
     private Integer totalSeats;
-
-    private Double ratingAverage;
-    private Long totalReviews;
 
     private PackageStatus status;
 
@@ -44,4 +39,9 @@ public class FlightResponseDTO {
     private String agentEmail;
 
     private List<String> imageUrls;
+
+    private Double ratingAverage;
+    private Long totalReviews;
+
+    private Map<FlightClassType, BigDecimal> classPrices;
 }

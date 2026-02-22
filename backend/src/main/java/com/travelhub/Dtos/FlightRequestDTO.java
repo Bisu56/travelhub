@@ -1,11 +1,13 @@
 package com.travelhub.Dtos;
 
 import com.travelhub.entity.enums.DestinationType;
+import com.travelhub.entity.enums.FlightClassType;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.math.BigDecimal;
 
 @Data
 public class FlightRequestDTO {
@@ -24,10 +26,9 @@ public class FlightRequestDTO {
     private LocalDate departureDate;
     private LocalDate arrivalDate;
 
-    private BigDecimal basePrice;
-    private BigDecimal discountPercentage;
-
     private Integer totalSeats;
 
     private List<String> imageUrls;
+
+    private Map<FlightClassType, BigDecimal> classPrices;
 }

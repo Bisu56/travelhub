@@ -1,7 +1,9 @@
 package com.travelhub.controller;
 
 import com.travelhub.Dtos.*;
+import com.travelhub.entity.Flight;
 import com.travelhub.entity.User;
+import com.travelhub.entity.enums.FlightClassType;
 import com.travelhub.service.FlightService;
 import com.travelhub.service.UserService;
 import jakarta.validation.Valid;
@@ -28,7 +30,10 @@ public class FlightAgentController {
             Authentication auth) {
 
         User agent = userService.getCurrentUser(auth);
-        return ResponseEntity.ok(flightService.createFlight(agent, dto));
+        // Pass classPrices map from DTO
+        return ResponseEntity.ok(
+                flightService.createFlight(agent, dto, dto.getClassPrices())
+        );
     }
 
     @PutMapping(value = "/{flightId}", consumes = "application/json")
@@ -38,7 +43,9 @@ public class FlightAgentController {
             Authentication auth) {
 
         User agent = userService.getCurrentUser(auth);
-        return ResponseEntity.ok(flightService.updateFlight(agent, flightId, dto));
+        return ResponseEntity.ok(
+                flightService.updateFlight(agent, flightId, dto, dto.getClassPrices())
+        );
     }
 
     @PostMapping("/{flightId}/submit")
@@ -60,9 +67,15 @@ public class FlightAgentController {
         return ResponseEntity.ok().build();
     }
 
-    // Booking management for agent-owned flights
+    @GetMapping("/bookings")
+    public ResponseEntity<List<FlightBookingResponseDTO>> myFlightBookings(
+            Authentication auth) {
 
-    @PostMapping("/booking/{bookingId}/confirm")
+        User agent = userService.getCurrentUser(auth);
+        return ResponseEntity.ok(flightService.getBookingsForAgent(agent));
+    }
+
+    @PostMapping("/bookings/{bookingId}/confirm")
     public ResponseEntity<Void> confirmBooking(
             @PathVariable Long bookingId,
             Authentication auth) {
@@ -72,7 +85,7 @@ public class FlightAgentController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/booking/{bookingId}/complete")
+    @PostMapping("/bookings/{bookingId}/complete")
     public ResponseEntity<Void> completeBooking(
             @PathVariable Long bookingId,
             Authentication auth) {
@@ -82,12 +95,15 @@ public class FlightAgentController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/bookings")
-    public ResponseEntity<List<FlightBookingResponseDTO>> myFlightBookings(
+    @PostMapping("/bookings/{bookingId}/reject")
+    public ResponseEntity<Void> rejectBooking(
+            @PathVariable Long bookingId,
+            @RequestBody BookingRejectionRequest request,
             Authentication auth) {
 
         User agent = userService.getCurrentUser(auth);
-        return ResponseEntity.ok(flightService.getBookingsForAgent(agent));
+        flightService.rejectBooking(agent, bookingId, request.getReason());
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/reviews")
@@ -95,8 +111,12 @@ public class FlightAgentController {
             Authentication auth) {
 
         User agent = userService.getCurrentUser(auth);
-        return ResponseEntity.ok(
-                flightService.getBookingsForAgent(agent)
-        );
+        List<Flight> flights = flightService.getFlightsByAgent(agent);
+
+        List<ReviewResponseDTO> reviews = flights.stream()
+                .flatMap(f -> flightService.getReviews(f.getId()).stream())
+                .toList();
+
+        return ResponseEntity.ok(reviews);
     }
 }

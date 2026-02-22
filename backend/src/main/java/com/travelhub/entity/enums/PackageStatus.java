@@ -6,6 +6,6 @@ public enum PackageStatus {
     APPROVED,
     PUBLISHED,
     REJECTED,
-    SUSPENDED
+    DELETED
 }
 

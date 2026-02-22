@@ -70,4 +70,17 @@ public class DestinationMapper {
                 .flightClass(inc != null ? inc.getFlightClass() : null)
                 .build();
     }
+    public static DestinationBookingResponseDTO toDTO(DestinationBooking booking) {
+        return DestinationBookingResponseDTO.builder()
+                .id(booking.getId())
+                .packageId(booking.getDestinationPackage().getId())
+                .packageTitle(booking.getDestinationPackage().getTitle())
+                .travelDate(booking.getTravelDate())
+                .numberOfPeople(booking.getNumberOfPeople())
+                .totalPrice(booking.getTotalPrice())
+                .bookingStatus(booking.getBookingStatus().name())
+                .paymentStatus(booking.getPaymentStatus().name())
+                .build();
+    }
+
 }

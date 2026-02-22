@@ -45,4 +45,9 @@ public class DestinationBooking {
     void onCreate() {
         createdAt = Instant.now();
     }
+
+    @Column(length = 500)
+    private String rejectionReason;
+
+
 }
