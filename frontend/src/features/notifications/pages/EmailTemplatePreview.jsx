@@ -4,29 +4,22 @@ import { getEmailTemplates, getEmailTemplateById } from "../services/notificatio
 const EmailTemplatePreview = () => {
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   const fetchTemplates = async () => {
-    setLoading(true);
     try {
       const res = await getEmailTemplates();
       setTemplates(res.data);
     } catch (error) {
       console.error("Failed to fetch templates", error);
-    } finally {
-      setLoading(false);
     }
   };
 
   const selectTemplate = async (id) => {
-    setLoading(true);
     try {
       const res = await getEmailTemplateById(id);
       setSelectedTemplate(res.data);
     } catch (error) {
       console.error("Failed to fetch template", error);
-    } finally {
-      setLoading(false);
     }
   };
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getNotificationSettings, updateNotificationSettings } from "../services/notificationApi";
+import { updateNotificationSettings } from "../services/notificationApi";
 
 const NotificationSettings = () => {
   const [emailEnabled, setEmailEnabled] = useState(true);
@@ -12,7 +12,7 @@ const NotificationSettings = () => {
     try {
       await updateNotificationSettings({ emailEnabled, pushEnabled });
       setMessage("Settings saved successfully");
-    } catch (error) {
+    } catch {
       setMessage("Failed to save settings");
     } finally {
       setLoading(false);
