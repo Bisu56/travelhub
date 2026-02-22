@@ -45,6 +45,7 @@ import EditPackage from '../pages/agent/EditPackage';
 const AgentEarningsDashboard = lazy(() => import('../features/earnings/pages/AgentEarningsDashboard'));
 const NotificationHistory = lazy(() => import('../features/notifications/pages/NotificationHistory'));
 const NotificationSettings = lazy(() => import('../features/notifications/pages/NotificationSettings'));
+const WishlistPage = lazy(() => import('../features/wishlist/pages/WishlistPage'));
 
 function AppRoutes() {
   return (
@@ -71,6 +72,7 @@ function AppRoutes() {
             <Route path="/payment-success" element={<PaymentSuccessPage />} />
             <Route path="/payment-failure" element={<PaymentFailurePage />} />
             <Route path="/payment-history" element={<PaymentHistoryPage />} />
+            <Route path="/wishlist" element={<WishlistPage />} />
           </Route>
 
           {/* ── ADMIN ROUTES ── */}
