@@ -1,5 +1,6 @@
 package com.travelhub.entity;
 
+import com.travelhub.entity.enums.FlightClassType;
 import com.travelhub.entity.enums.ServiceType;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -30,7 +31,7 @@ public class CartItem {
     private ServiceType serviceType;
 
     @Column(nullable = false)
-    private Integer quantity;
+    private Integer quantity; // People count for Destination, passengers for Flight, seats for Vehicle
 
     @Column(nullable = false)
     private BigDecimal unitPrice;
@@ -38,9 +39,16 @@ public class CartItem {
     @Column(nullable = false)
     private BigDecimal subtotal;
 
+    // Vehicle
     private LocalDate startDate;
     private LocalDate endDate;
+    private Boolean fullVehicle;
 
+    // Flight
+    @Enumerated(EnumType.STRING)
+    private FlightClassType flightClass;
+
+    // Destination
     private LocalDate travelDate;
 
     @PrePersist

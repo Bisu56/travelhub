@@ -82,5 +82,14 @@ public class DestinationMapper {
                 .paymentStatus(booking.getPaymentStatus().name())
                 .build();
     }
-
+    public static ReviewResponseDTO toReviewDTO(Review review, User user) {
+        return ReviewResponseDTO.builder()
+                .id(review.getId())
+                .packageId(review.getReferenceId())
+                .userId(user.getId())
+                .userEmail(user.getEmail())
+                .rating(review.getRating())
+                .comment(review.getComment())
+                .build();
+    }
 }

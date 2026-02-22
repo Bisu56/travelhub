@@ -2,6 +2,7 @@ package com.travelhub.controller;
 
 import com.travelhub.Dtos.AddToCartRequest;
 import com.travelhub.Dtos.CartResponseDTO;
+import com.travelhub.Dtos.CheckoutResponseDTO;
 import com.travelhub.entity.User;
 import com.travelhub.service.CartService;
 import com.travelhub.service.UserService;

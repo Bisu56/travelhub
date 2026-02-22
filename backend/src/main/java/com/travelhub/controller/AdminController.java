@@ -17,13 +17,11 @@ public class AdminController {
 
     private final AdminService adminService;
 
-    // Pending approval
     @GetMapping("/agents/pending")
     public ResponseEntity<List<AgentProfile>> listPendingAgents() {
         return ResponseEntity.ok(adminService.listPendingAgents());
     }
 
-    // Approve / Reject
     @PostMapping("/agents/{agentId}/approve")
     public ResponseEntity<String> approveAgent(@PathVariable Long agentId) {
         adminService.approveAgent(agentId);

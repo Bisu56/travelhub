@@ -16,6 +16,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * VehicleService manages CRUD, approval, search, and booking flows for vehicles.
+ * Includes agent/admin role checks, booking validation, and cart integration.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -26,14 +30,16 @@ public class VehicleService {
     private final ReviewService reviewService;
     private final AuditService auditService;
 
+    // ---------------- Vehicle CRUD & Approval ----------------
+
     public VehicleResponseDTO createVehicle(User agent, VehicleRequestDTO dto) {
         validateAgent(agent);
         validateVehicle(dto);
 
         VehicleOffering vehicle = VehicleMapper.toEntity(dto, agent);
         vehicle.setApprovalStatus(PackageStatus.DRAFT);
-
         vehicleRepository.save(vehicle);
+
         return VehicleMapper.toDTO(vehicle);
     }
 
@@ -70,6 +76,7 @@ public class VehicleService {
     public VehicleResponseDTO approveVehicle(User admin, Long id, String ip) {
         checkAdmin(admin);
         VehicleOffering vehicle = getVehicle(id);
+
         if (vehicle.getApprovalStatus() != PackageStatus.SUBMITTED)
             throw new BadRequestException("Only SUBMITTED vehicles can be approved");
 
@@ -85,6 +92,7 @@ public class VehicleService {
     public VehicleResponseDTO rejectVehicle(User admin, Long id, String reason, String ip) {
         checkAdmin(admin);
         VehicleOffering vehicle = getVehicle(id);
+
         if (vehicle.getApprovalStatus() != PackageStatus.SUBMITTED)
             throw new BadRequestException("Only SUBMITTED vehicles can be rejected");
 
@@ -107,33 +115,39 @@ public class VehicleService {
 
     public List<VehicleResponseDTO> listPendingVehicles() {
         return vehicleRepository.findByApprovalStatus(PackageStatus.SUBMITTED)
-                .stream()
-                .map(VehicleMapper::toDTO)
-                .collect(Collectors.toList());
+                .stream().map(VehicleMapper::toDTO).collect(Collectors.toList());
     }
 
-    public List<VehicleResponseDTO> searchVehicles(String location, LocalDate startDate, LocalDate endDate, Double minPrice, Double maxPrice) {
+    // ---------------- Search & Listing ----------------
+
+    public List<VehicleResponseDTO> searchVehicles(String location, LocalDate startDate, LocalDate endDate,
+                                                   Double minPrice, Double maxPrice) {
         return vehicleRepository.findAll()
                 .stream()
                 .filter(VehicleOffering::getActive)
                 .filter(v -> v.getApprovalStatus() == PackageStatus.PUBLISHED)
                 .filter(v -> location == null || v.getLocation().equalsIgnoreCase(location))
-                .filter(v -> minPrice == null || v.getPricePerSeat().doubleValue() >= minPrice || v.getFullVehiclePricePerDay().doubleValue() >= minPrice)
-                .filter(v -> maxPrice == null || v.getPricePerSeat().doubleValue() <= maxPrice || v.getFullVehiclePricePerDay().doubleValue() <= maxPrice)
+                .filter(v -> minPrice == null || v.getPricePerSeat().doubleValue() >= minPrice
+                        || v.getFullVehiclePricePerDay().doubleValue() >= minPrice)
+                .filter(v -> maxPrice == null || v.getPricePerSeat().doubleValue() <= maxPrice
+                        || v.getFullVehiclePricePerDay().doubleValue() <= maxPrice)
                 .map(VehicleMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
+    public List<VehicleResponseDTO> getVehiclesByAgent(User agent) {
+        return vehicleRepository.findByCreatedBy(agent)
+                .stream().map(VehicleMapper::toDTO).collect(Collectors.toList());
+    }
+
+    // ---------------- Booking ----------------
+
     public VehicleBookingResponseDTO bookVehicle(User user, Long vehicleId, VehicleBookingRequest request) {
         VehicleOffering vehicle = getVehicle(vehicleId);
-
-        if (vehicle.getApprovalStatus() != PackageStatus.PUBLISHED)
-            throw new BadRequestException("Vehicle not available");
-
+        validateBookingAvailability(vehicle);
         validateBookingRequest(vehicle, request);
 
         BigDecimal totalPrice = calculatePrice(vehicle, request);
-
         VehicleBooking booking = VehicleBooking.builder()
                 .user(user)
                 .vehicle(vehicle)
@@ -193,24 +207,20 @@ public class VehicleService {
 
     public List<VehicleBookingResponseDTO> getUserBookings(User user) {
         return bookingRepository.findByUser(user)
-                .stream()
-                .map(VehicleMapper::bookingToDTO)
-                .collect(Collectors.toList());
+                .stream().map(VehicleMapper::bookingToDTO).collect(Collectors.toList());
     }
 
     public List<VehicleBookingResponseDTO> getBookingsForAgent(User agent) {
         return bookingRepository.findByVehicle_CreatedBy(agent)
-                .stream()
-                .map(VehicleMapper::bookingToDTO)
-                .collect(Collectors.toList());
+                .stream().map(VehicleMapper::bookingToDTO).collect(Collectors.toList());
     }
 
     public List<VehicleBookingResponseDTO> getAllBookings() {
         return bookingRepository.findAll()
-                .stream()
-                .map(VehicleMapper::bookingToDTO)
-                .collect(Collectors.toList());
+                .stream().map(VehicleMapper::bookingToDTO).collect(Collectors.toList());
     }
+
+    // ---------------- Reviews ----------------
 
     public ReviewResponseDTO addReview(User user, Long vehicleId, Integer rating, String comment) {
         Review review = reviewService.addReview(vehicleId, rating, comment, user);
@@ -238,12 +248,42 @@ public class VehicleService {
                 .collect(Collectors.toList());
     }
 
-    public List<VehicleResponseDTO> getVehiclesByAgent(User agent) {
-        return vehicleRepository.findByCreatedBy(agent)
-                .stream()
-                .map(VehicleMapper::toDTO)
-                .collect(Collectors.toList());
+    // ---------------- Cart Integration ----------------
+
+    public BigDecimal getPriceForCart(AddToCartRequest request) {
+        VehicleOffering vehicle = getVehicle(request.getReferenceId());
+        long days = request.getStartDate().until(request.getEndDate()).getDays() + 1;
+        boolean fullVehicle = request.getQuantity() != null && request.getQuantity() >= vehicle.getTotalSeats();
+
+        if (fullVehicle) {
+            return vehicle.getFullVehiclePricePerDay().multiply(BigDecimal.valueOf(days));
+        } else {
+            return vehicle.getPricePerSeat()
+                    .multiply(BigDecimal.valueOf(request.getQuantity()))
+                    .multiply(BigDecimal.valueOf(days));
+        }
     }
+
+    public VehicleBookingResponseDTO createBookingFromCart(User user, CartItem item) {
+        VehicleOffering vehicle = getVehicle(item.getReferenceId());
+        validateBookingAvailability(vehicle);
+
+        VehicleBooking booking = VehicleBooking.builder()
+                .user(user)
+                .vehicle(vehicle)
+                .seatCount(item.getQuantity() != null ? item.getQuantity() : vehicle.getTotalSeats())
+                .days(item.getStartDate().until(item.getEndDate()).getDays() + 1)
+                .fullVehicle(item.getQuantity() == null || item.getQuantity() >= vehicle.getTotalSeats())
+                .totalPrice(item.getSubtotal())
+                .bookingStatus(BookingStatus.PENDING)
+                .paymentStatus(PaymentStatus.UNPAID)
+                .build();
+
+        bookingRepository.save(booking);
+        return VehicleMapper.bookingToDTO(booking);
+    }
+
+    // ---------------- Internal Helpers ----------------
 
     private VehicleOffering getVehicle(Long id) {
         return vehicleRepository.findById(id)
@@ -265,14 +305,6 @@ public class VehicleService {
     private void checkAdmin(User user) {
         if (user.getRole() != Role.ADMIN)
             throw new ForbiddenException("Admin only");
-    }
-
-    private void checkBookingPermission(User actor, VehicleBooking booking) {
-        boolean isAdmin = actor.getRole() == Role.ADMIN;
-        boolean isAgent = actor.getRole() == Role.AGENT &&
-                booking.getVehicle().getCreatedBy().getId().equals(actor.getId());
-        if (!isAdmin && !isAgent)
-            throw new ForbiddenException("Unauthorized");
     }
 
     private void validateAgent(User user) {
@@ -300,12 +332,38 @@ public class VehicleService {
             throw new BadRequestException("Invalid number of days");
     }
 
+    private void validateBookingAvailability(VehicleOffering vehicle) {
+        if (vehicle.getApprovalStatus() != PackageStatus.PUBLISHED)
+            throw new BadRequestException("Vehicle not available");
+    }
+
     private BigDecimal calculatePrice(VehicleOffering vehicle, VehicleBookingRequest request) {
         if (request.getFullVehicle()) {
             return vehicle.getFullVehiclePricePerDay().multiply(BigDecimal.valueOf(request.getDays()));
         } else {
             BigDecimal seatPrice = vehicle.getPricePerSeat().multiply(BigDecimal.valueOf(request.getSeats()));
             return seatPrice.multiply(BigDecimal.valueOf(request.getDays()));
+        }
+    }
+
+    private void checkBookingPermission(User actor, VehicleBooking booking) {
+        boolean isAdmin = actor.getRole() == Role.ADMIN;
+        boolean isAgent = actor.getRole() == Role.AGENT &&
+                booking.getVehicle().getCreatedBy().getId().equals(actor.getId());
+        if (!isAdmin && !isAgent)
+            throw new ForbiddenException("Unauthorized");
+    }
+    public BigDecimal getPriceById(Long vehicleId, LocalDate startDate, LocalDate endDate, Integer seats, Boolean fullVehicle) {
+        VehicleOffering vehicle = getVehicle(vehicleId); // existing helper
+        validateBookingAvailability(vehicle);
+
+        int days = (startDate != null && endDate != null) ? (int) (endDate.toEpochDay() - startDate.toEpochDay() + 1) : 1;
+        int seatCount = (seats != null && seats > 0) ? seats : vehicle.getTotalSeats();
+
+        if (fullVehicle != null && fullVehicle) {
+            return vehicle.getFullVehiclePricePerDay().multiply(BigDecimal.valueOf(days));
+        } else {
+            return vehicle.getPricePerSeat().multiply(BigDecimal.valueOf(seatCount)).multiply(BigDecimal.valueOf(days));
         }
     }
 }

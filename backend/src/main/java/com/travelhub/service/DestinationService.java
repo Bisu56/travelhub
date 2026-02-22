@@ -11,10 +11,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,8 +27,9 @@ public class DestinationService {
     private final ReviewService reviewService;
     private final AuditService auditService;
 
+
     public DestinationResponseDTO createPackage(User agent, DestinationRequestDTO dto) {
-        if (agent.getRole() != Role.AGENT) throw new ForbiddenException("Only agents can create packages");
+        validateAgent(agent);
         DestinationPackage pkg = DestinationMapper.toEntity(dto, agent);
         pkg.setStatus(PackageStatus.DRAFT);
         pkg.calculateFinalPrice();
@@ -37,11 +39,7 @@ public class DestinationService {
 
     public DestinationResponseDTO updatePackage(User actor, Long id, DestinationRequestDTO dto) {
         DestinationPackage pkg = getPackage(id);
-
-        if (actor.getRole() == Role.AGENT && !pkg.getCreatedBy().getId().equals(actor.getId()))
-            throw new ForbiddenException("Not your package");
-        if (actor.getRole() != Role.AGENT && actor.getRole() != Role.ADMIN)
-            throw new ForbiddenException("Unauthorized");
+        validateUpdatePermission(actor, pkg);
 
         updateFields(pkg, dto);
         validatePackage(pkg);
@@ -67,27 +65,36 @@ public class DestinationService {
     }
 
     public DestinationResponseDTO approvePackage(User admin, Long id, String ip) {
-        DestinationPackage pkg = getPackage(id);
         checkAdmin(admin);
-        if (pkg.getStatus() != PackageStatus.SUBMITTED) throw new BadRequestException("Only SUBMITTED packages can be approved");
+        DestinationPackage pkg = getPackage(id);
+
+        if (pkg.getStatus() != PackageStatus.SUBMITTED)
+            throw new BadRequestException("Only SUBMITTED packages can be approved");
+
         pkg.setStatus(PackageStatus.APPROVED);
         pkg.setApprovedBy(admin);
         pkg.setApprovedAt(Instant.now());
         pkg.setRejectionReason(null);
         packageRepository.save(pkg);
+
         auditService.log(admin.getEmail(), "APPROVED PACKAGE " + id, ip);
         return DestinationMapper.toDTO(pkg);
     }
 
     public DestinationResponseDTO publishPackage(User admin, Long id, String ip) {
-        DestinationPackage pkg = getPackage(id);
         checkAdmin(admin);
-        if (pkg.getStatus() != PackageStatus.APPROVED) throw new BadRequestException("Only APPROVED packages can be published");
+        DestinationPackage pkg = getPackage(id);
+
+        if (pkg.getStatus() != PackageStatus.APPROVED)
+            throw new BadRequestException("Only APPROVED packages can be published");
+
         pkg.setStatus(PackageStatus.PUBLISHED);
         packageRepository.save(pkg);
+
         auditService.log(admin.getEmail(), "PUBLISHED PACKAGE " + id, ip);
         return DestinationMapper.toDTO(pkg);
     }
+
 
     public List<DestinationResponseDTO> searchPackages(String country, String city, DestinationType type,
                                                        Double minPrice, Double maxPrice, LocalDate travelDate,
@@ -101,16 +108,14 @@ public class DestinationService {
                 .filter(p -> maxPrice == null || p.getFinalPrice().doubleValue() <= maxPrice)
                 .filter(p -> travelDate == null || isWithinTravelDate(p, travelDate))
                 .filter(p -> inclusionMatch(p.getInclusionDetails(), includesHotel, includesFlight, includesFood, includesTransport))
-                .map(DestinationMapper::toDTO).toList();
+                .map(DestinationMapper::toDTO)
+                .collect(Collectors.toList());
     }
+
 
     public DestinationBookingResponseDTO bookPackage(User user, Long packageId, Integer people, LocalDate travelDate) {
         DestinationPackage pkg = getPackage(packageId);
-        if (pkg.getStatus() != PackageStatus.PUBLISHED) throw new BadRequestException("Package not available");
-        if (travelDate.isBefore(LocalDate.now())) throw new BadRequestException("Cannot book past dates");
-        if (travelDate.isBefore(pkg.getAvailableFrom()) || travelDate.isAfter(pkg.getAvailableTo()))
-            throw new BadRequestException("Travel date outside availability");
-        if (people > pkg.getMaxPeople()) throw new BadRequestException("Exceeds max allowed people");
+        validateBooking(pkg, people, travelDate);
 
         BigDecimal totalPrice = pkg.getFinalPrice().multiply(BigDecimal.valueOf(people));
 
@@ -126,29 +131,19 @@ public class DestinationService {
 
         bookingRepository.save(booking);
 
-        return DestinationBookingResponseDTO.builder()
-                .id(booking.getId())
-                .packageId(pkg.getId())
-                .packageTitle(pkg.getTitle())
-                .travelDate(travelDate)
-                .numberOfPeople(people)
-                .totalPrice(totalPrice)
-                .bookingStatus(booking.getBookingStatus().name())
-                .paymentStatus(booking.getPaymentStatus().name())
-                .build();
+        return DestinationMapper.toDTO(booking);
     }
 
     public void cancelBooking(User user, Long bookingId) {
         DestinationBooking booking = getBooking(bookingId);
-        if (!booking.getUser().getId().equals(user.getId())) throw new ForbiddenException("Not your booking");
-        if (booking.getBookingStatus() == BookingStatus.COMPLETED) throw new BadRequestException("Cannot cancel completed booking");
+        validateUserBooking(user, booking);
         booking.setBookingStatus(BookingStatus.CANCELLED);
         bookingRepository.save(booking);
     }
 
     public void confirmBooking(User actor, Long bookingId) {
         DestinationBooking booking = getBooking(bookingId);
-        if (booking.getBookingStatus() != BookingStatus.PENDING) throw new BadRequestException("Only PENDING bookings can be confirmed");
+        validateBookingStatus(booking, BookingStatus.PENDING);
         checkBookingPermission(actor, booking);
         booking.setBookingStatus(BookingStatus.CONFIRMED);
         bookingRepository.save(booking);
@@ -156,7 +151,7 @@ public class DestinationService {
 
     public void completeBooking(User actor, Long bookingId) {
         DestinationBooking booking = getBooking(bookingId);
-        if (booking.getBookingStatus() != BookingStatus.CONFIRMED) throw new BadRequestException("Only CONFIRMED bookings can be completed");
+        validateBookingStatus(booking, BookingStatus.CONFIRMED);
         checkBookingPermission(actor, booking);
         booking.setBookingStatus(BookingStatus.COMPLETED);
         bookingRepository.save(booking);
@@ -164,56 +159,23 @@ public class DestinationService {
 
     public void rejectBooking(User actor, Long bookingId, String reason) {
         DestinationBooking booking = getBooking(bookingId);
-        if (booking.getBookingStatus() != BookingStatus.PENDING) throw new BadRequestException("Only PENDING bookings can be rejected");
+        validateBookingStatus(booking, BookingStatus.PENDING);
         checkBookingPermission(actor, booking);
         booking.setBookingStatus(BookingStatus.REJECTED);
         booking.setRejectionReason(reason);
         bookingRepository.save(booking);
     }
 
-    public List<DestinationBookingResponseDTO> getUserBookings(User user) {
-        return bookingRepository.findByUser(user).stream()
-                .map(DestinationMapper::toDTO)
-                .toList();
-    }
-
-    public List<DestinationBookingResponseDTO> getBookingsForAgent(User agent) {
-        List<Long> packageIds = packageRepository.findByCreatedByAndIsDeletedFalse(agent)
-                .stream().map(DestinationPackage::getId).toList();
-        return bookingRepository.findByDestinationPackageIdIn(packageIds).stream()
-                .map(DestinationMapper::toDTO)
-                .toList();
-    }
-
-    public List<DestinationBookingResponseDTO> getAllBookings() {
-        return bookingRepository.findAll().stream()
-                .map(DestinationMapper::toDTO)
-                .toList();
-    }
 
     public ReviewResponseDTO addReview(User user, Long packageId, Integer rating, String comment) {
         Review review = reviewService.addReview(packageId, rating, comment, user);
-        return ReviewResponseDTO.builder()
-                .id(review.getId())
-                .packageId(review.getReferenceId())
-                .userId(user.getId())
-                .userEmail(user.getEmail())
-                .rating(review.getRating())
-                .comment(review.getComment())
-                .build();
+        return DestinationMapper.toReviewDTO(review, user);
     }
 
     public List<ReviewResponseDTO> getReviewsForPackage(Long packageId) {
         return reviewService.getReviews(packageId).stream()
-                .map(r -> ReviewResponseDTO.builder()
-                        .id(r.getId())
-                        .packageId(r.getReferenceId())
-                        .userId(r.getUser().getId())
-                        .userEmail(r.getUser().getEmail())
-                        .rating(r.getRating())
-                        .comment(r.getComment())
-                        .build())
-                .toList();
+                .map(r -> DestinationMapper.toReviewDTO(r, r.getUser()))
+                .collect(Collectors.toList());
     }
 
     public List<ReviewResponseDTO> getReviewsForAgent(User agent) {
@@ -222,15 +184,88 @@ public class DestinationService {
 
         return packageIds.stream()
                 .flatMap(pkgId -> reviewService.getReviews(pkgId).stream())
-                .map(r -> ReviewResponseDTO.builder()
-                        .id(r.getId())
-                        .packageId(r.getReferenceId())
-                        .userId(r.getUser().getId())
-                        .userEmail(r.getUser().getEmail())
-                        .rating(r.getRating())
-                        .comment(r.getComment())
-                        .build())
+                .map(r -> DestinationMapper.toReviewDTO(r, r.getUser()))
+                .collect(Collectors.toList());
+    }
+
+    public List<ReviewResponseDTO> getAllReviews() {
+        List<Long> packageIds = packageRepository.findAll()
+                .stream()
+                .filter(pkg -> !pkg.getIsDeleted())
+                .map(DestinationPackage::getId)
                 .toList();
+        return packageIds.stream()
+                .flatMap(pkgId -> reviewService.getReviews(pkgId).stream())
+                .map(r -> DestinationMapper.toReviewDTO(r, r.getUser()))
+                .collect(Collectors.toList());
+    }
+
+
+    public BigDecimal getPriceForCart(AddToCartRequest request) {
+        DestinationPackage pkg = getPackage(request.getReferenceId());
+        int quantity = request.getQuantity() != null ? request.getQuantity() : 1;
+        return pkg.getFinalPrice().multiply(BigDecimal.valueOf(quantity));
+    }
+
+    public DestinationBooking createBookingFromCart(User user, CartItem item) {
+        DestinationPackage pkg = getPackage(item.getReferenceId());
+
+        DestinationBooking booking = DestinationBooking.builder()
+                .user(user)
+                .destinationPackage(pkg)
+                .numberOfPeople(item.getQuantity())
+                .travelDate(item.getTravelDate())
+                .totalPrice(item.getSubtotal())
+                .bookingStatus(BookingStatus.PENDING)
+                .paymentStatus(PaymentStatus.UNPAID)
+                .build();
+
+        bookingRepository.save(booking);
+        return booking;
+    }
+
+    public List<DestinationBookingResponseDTO> getUserBookings(User user) {
+        return bookingRepository.findByUser(user).stream()
+                .map(DestinationMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<DestinationBookingResponseDTO> getBookingsForAgent(User agent) {
+        List<Long> packageIds = packageRepository.findByCreatedByAndIsDeletedFalse(agent)
+                .stream().map(DestinationPackage::getId).toList();
+
+        return bookingRepository.findByDestinationPackageIdIn(packageIds).stream()
+                .map(DestinationMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<DestinationBookingResponseDTO> getAllBookings() {
+        return bookingRepository.findAll().stream()
+                .map(DestinationMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<DestinationResponseDTO> listPendingPackages() {
+        return packageRepository.findByStatusAndIsDeletedFalse(PackageStatus.SUBMITTED)
+                .stream().map(DestinationMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    // ---------------- Internal Helpers ----------------
+
+    private void validateAgent(User agent) {
+        if (agent.getRole() != Role.AGENT)
+            throw new ForbiddenException("Only agents allowed");
+    }
+
+    private void checkAdmin(User admin) {
+        if (admin.getRole() != Role.ADMIN)
+            throw new ForbiddenException("Only admin allowed");
+    }
+
+    private DestinationPackage getPackage(Long id) {
+        return packageRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Package not found"));
     }
 
     private DestinationPackage getOwnedPackage(Long id, User agent) {
@@ -240,44 +275,47 @@ public class DestinationService {
         return pkg;
     }
 
-    private DestinationPackage getPackage(Long id) {
-        return packageRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Package not found"));
-    }
-
     private DestinationBooking getBooking(Long id) {
         return bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
     }
-    public List<DestinationResponseDTO> listPendingPackages() {
-        return packageRepository.findByStatusAndIsDeletedFalse(PackageStatus.SUBMITTED)
-                .stream()
-                .map(DestinationMapper::toDTO)
-                .toList();
-    }
-    public List<ReviewResponseDTO> getAllReviews() {
-        return packageRepository.findAll().stream()
-                .flatMap(pkg -> reviewService.getReviews(pkg.getId()).stream())
-                .map(r -> ReviewResponseDTO.builder()
-                        .id(r.getId())
-                        .packageId(r.getReferenceId())
-                        .userId(r.getUser().getId())
-                        .userEmail(r.getUser().getEmail())
-                        .rating(r.getRating())
-                        .comment(r.getComment())
-                        .build())
-                .toList();
+
+    private void validateUpdatePermission(User actor, DestinationPackage pkg) {
+        if (actor.getRole() == Role.AGENT && !pkg.getCreatedBy().getId().equals(actor.getId()))
+            throw new ForbiddenException("Not your package");
+        if (actor.getRole() != Role.AGENT && actor.getRole() != Role.ADMIN)
+            throw new ForbiddenException("Unauthorized");
     }
 
-    private void checkAdmin(User admin) {
-        if (admin.getRole() != Role.ADMIN) throw new ForbiddenException("Only admin allowed");
+    private void validateBooking(DestinationPackage pkg, int people, LocalDate travelDate) {
+        if (pkg.getStatus() != PackageStatus.PUBLISHED)
+            throw new BadRequestException("Package not available");
+        if (travelDate.isBefore(LocalDate.now()))
+            throw new BadRequestException("Cannot book past dates");
+        if (travelDate.isBefore(pkg.getAvailableFrom()) || travelDate.isAfter(pkg.getAvailableTo()))
+            throw new BadRequestException("Travel date outside availability");
+        if (people > pkg.getMaxPeople())
+            throw new BadRequestException("Exceeds max allowed people");
+    }
+
+    private void validateBookingStatus(DestinationBooking booking, BookingStatus expected) {
+        if (booking.getBookingStatus() != expected)
+            throw new BadRequestException("Invalid booking status: " + booking.getBookingStatus());
+    }
+
+    private void validateUserBooking(User user, DestinationBooking booking) {
+        if (!booking.getUser().getId().equals(user.getId()))
+            throw new ForbiddenException("Not your booking");
+        if (booking.getBookingStatus() == BookingStatus.COMPLETED)
+            throw new BadRequestException("Cannot cancel completed booking");
     }
 
     private void checkBookingPermission(User actor, DestinationBooking booking) {
         boolean isAdmin = actor.getRole() == Role.ADMIN;
         boolean isAgent = actor.getRole() == Role.AGENT &&
                 booking.getDestinationPackage().getCreatedBy().getId().equals(actor.getId());
-        if (!isAdmin && !isAgent) throw new ForbiddenException("Unauthorized to act on booking");
+        if (!isAdmin && !isAgent)
+            throw new ForbiddenException("Unauthorized to act on booking");
     }
 
     private void updateFields(DestinationPackage pkg, DestinationRequestDTO dto) {
@@ -296,17 +334,14 @@ public class DestinationService {
 
         if (pkg.getInclusionDetails() == null) pkg.setInclusionDetails(new PackageInclusionDetails());
         PackageInclusionDetails inc = pkg.getInclusionDetails();
-
         inc.setIncludesHotel(dto.getIncludesHotel());
         inc.setIncludesFlight(dto.getIncludesFlight());
         inc.setIncludesFood(dto.getIncludesFood());
         inc.setIncludesTransport(dto.getIncludesTransport());
-
         inc.setHotelCost(dto.getHotelCost());
         inc.setFlightCost(dto.getFlightCost());
         inc.setFoodCost(dto.getFoodCost());
         inc.setTransportCost(dto.getTransportCost());
-
         inc.setHotelType(dto.getHotelType());
         inc.setFlightClass(dto.getFlightClass());
     }
@@ -329,16 +364,27 @@ public class DestinationService {
         return filter == null || (value != null && value.equalsIgnoreCase(filter));
     }
 
-    private boolean isWithinTravelDate(DestinationPackage p, LocalDate travelDate) {
-        return p.getAvailableFrom() != null && p.getAvailableTo() != null &&
-                !travelDate.isBefore(p.getAvailableFrom()) && !travelDate.isAfter(p.getAvailableTo());
+    private boolean isWithinTravelDate(DestinationPackage pkg, LocalDate date) {
+        return pkg.getAvailableFrom() != null && pkg.getAvailableTo() != null &&
+                !date.isBefore(pkg.getAvailableFrom()) && !date.isAfter(pkg.getAvailableTo());
     }
 
-    private boolean inclusionMatch(PackageInclusionDetails d, Boolean h, Boolean f, Boolean food, Boolean t) {
-        if (d == null) return false;
-        return (h == null || Objects.equals(d.getIncludesHotel(), h)) &&
-                (f == null || Objects.equals(d.getIncludesFlight(), f)) &&
-                (food == null || Objects.equals(d.getIncludesFood(), food)) &&
-                (t == null || Objects.equals(d.getIncludesTransport(), t));
+    private boolean inclusionMatch(PackageInclusionDetails details, Boolean hotel, Boolean flight, Boolean food, Boolean transport) {
+        if (details == null) return false;
+        return (hotel == null || Objects.equals(details.getIncludesHotel(), hotel)) &&
+                (flight == null || Objects.equals(details.getIncludesFlight(), flight)) &&
+                (food == null || Objects.equals(details.getIncludesFood(), food)) &&
+                (transport == null || Objects.equals(details.getIncludesTransport(), transport));
+    }
+    public BigDecimal getPriceById(Long packageId, Integer quantity, LocalDate travelDate) {
+        DestinationPackage pkg = getPackage(packageId); // existing helper
+        int people = (quantity != null && quantity > 0) ? quantity : 1;
+
+        // Optional: validate travel date
+        if (travelDate != null && (travelDate.isBefore(pkg.getAvailableFrom()) || travelDate.isAfter(pkg.getAvailableTo()))) {
+            throw new BadRequestException("Travel date outside availability");
+        }
+
+        return pkg.getFinalPrice().multiply(BigDecimal.valueOf(people));
     }
 }
