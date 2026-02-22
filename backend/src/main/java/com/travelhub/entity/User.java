@@ -53,9 +53,12 @@ public class User {
         createdAt = Instant.now();
         updatedAt = Instant.now();
     }
+    @Column(nullable = false)
+    private Boolean active = true;
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = Instant.now();
     }
 }
+

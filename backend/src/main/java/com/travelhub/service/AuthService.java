@@ -102,23 +102,28 @@ public class AuthService {
         user.setAccountStatus(AccountStatus.APPROVED);
         userRepository.save(user);
     }
+    public AuthResponse login(String loginId, String password) {
 
-    public AuthResponse login(String emailOrPhone, String password) {
-        if (emailOrPhone == null || emailOrPhone.isBlank())
+        if (loginId == null || loginId.isBlank())
             throw new RuntimeException("Email or phone must be provided");
 
-        User user = emailOrPhone.contains("@")
-                ? userRepository.findByEmail(emailOrPhone).orElseThrow(() -> new RuntimeException("Invalid credentials"))
-                : userRepository.findByPhone(emailOrPhone).orElseThrow(() -> new RuntimeException("Invalid credentials"));
+        User user = userRepository
+                .findByEmailOrPhone(loginId, loginId)
+                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            auditService.logAction(emailOrPhone, "LOGIN_FAILED");
+            auditService.logAction(loginId, "LOGIN_FAILED");
             throw new RuntimeException("Invalid credentials");
         }
 
         boolean verified = Boolean.TRUE.equals(user.getEmailVerified())
                 || Boolean.TRUE.equals(user.getPhoneVerified());
-        if (!verified) throw new RuntimeException("Verify email or phone first");
+
+        if (!verified)
+            throw new RuntimeException("Verify email or phone first");
+
+        if (!Boolean.TRUE.equals(user.getActive()))
+            throw new RuntimeException("Account disabled");
 
         if (user.getAccountStatus() != AccountStatus.APPROVED)
             throw new RuntimeException("Account not approved");
@@ -126,8 +131,10 @@ public class AuthService {
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = refreshTokenService.createRefreshToken(user);
 
-        auditService.logAction(emailOrPhone, "LOGIN_SUCCESS");
+        auditService.logAction(loginId, "LOGIN_SUCCESS");
+
         return new AuthResponse(accessToken, refreshToken);
+
 
     }
         public boolean logout(String refreshToken) {

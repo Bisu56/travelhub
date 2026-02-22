@@ -1,4 +1,6 @@
 package com.travelhub.Filter;
+import com.travelhub.entity.User;
+import com.travelhub.repository.UserRepository;
 import com.travelhub.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -13,17 +15,18 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
-
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
@@ -39,14 +42,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String email = jwtService.extractUsername(token);
-        String role = jwtService.extractRole(token);
+        String loginId = jwtService.extractUsername(token);
 
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                email, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
-        );
+        User user = userRepository
+                .findByEmailOrPhone(loginId, loginId)
+                .orElse(null);
+
+        if (user == null || !Boolean.TRUE.equals(user.getActive())) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(
+                        user.getId(),  // better than email
+                        null,
+                        Collections.singletonList(
+                                new SimpleGrantedAuthority("ROLE_" + user.getRole().name())
+                        )
+                );
 
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
         filterChain.doFilter(request, response);
     }
 }
