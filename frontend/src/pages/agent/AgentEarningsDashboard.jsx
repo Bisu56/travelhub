@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { getAgentEarnings, exportEarnings } from "../services/earningsService";
-import EarningsSummaryCard from "../components/agent/earnings/EarningsSummaryCard";
-import EarningsChart from "../components/agent/earnings/EarningsChart";
-import CommissionTable from "../components/agent/earnings/CommissionTable";
-import PayoutRequestForm from "../components/agent/earnings/PayoutRequestForm";
-import PayoutHistoryTable from "../components/agent/earnings/PayoutHistoryTable";
+import { getAgentEarnings, exportEarnings } from '../../services/earningsService';
+import EarningsSummaryCard from '../../components/agent/earnings/EarningsSummaryCard';
+import EarningsChart from '../../components/agent/earnings/EarningsChart';
+import CommissionTable from '../../components/agent/earnings/CommissionTable';
+import PayoutRequestForm from '../../components/agent/earnings/PayoutRequestForm';
+import PayoutHistoryTable from '../../components/agent/earnings/PayoutHistoryTable';
 
 const AgentEarningsDashboard = () => {
   const [data, setData] = useState(null);

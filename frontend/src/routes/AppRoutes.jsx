@@ -29,6 +29,8 @@ import AdminDashboard from '../pages/admin/AdminDashboard';
 import AgentApproval from '../pages/admin/AgentApproval';
 import Destination from '../pages/admin/Destination';
 import AdminReviewModeration from '../features/reviews/pages/AdminReviewModeration';
+import AdminCommissionManagement from '../pages/admin/AdminCommissionManagement';
+import AdminPayoutApproval from '../pages/admin/AdminPayoutApproval';
 
 // Agent layout & pages
 import AgentLayout from '../components/layout/AgentLayout';
@@ -36,6 +38,7 @@ import AgentDashboard from '../pages/agent/AgentDashboard';
 import AgentPackages from '../pages/agent/AgentPackage';
 import CreatePackage from '../pages/agent/CreatePackages';
 import EditPackage from '../pages/agent/EditPackage';
+import AgentEarningsDashboard from '../pages/agent/AgentEarningsDashboard';
 
 function AppRoutes() {
   return (
@@ -100,6 +103,24 @@ function AppRoutes() {
           }
         />
 
+        <Route
+          path="/admin/commissions"
+          element={
+              <AdminLayout>
+                <AdminCommissionManagement />
+              </AdminLayout>
+          }
+        />
+
+        <Route
+          path="/admin/payouts"
+          element={
+              <AdminLayout>
+                <AdminPayoutApproval />
+              </AdminLayout>
+          }
+        />
+
         {/* ── AGENT ROUTES (temporarily public for testing) ── */}
         <Route
           path="/agent/dashboard"
@@ -133,6 +154,15 @@ function AppRoutes() {
           element={
               <AgentLayout>
                 <EditPackage />
+              </AgentLayout>
+          }
+        />
+
+        <Route
+          path="/agent/earnings"
+          element={
+              <AgentLayout>
+                <AgentEarningsDashboard />
               </AgentLayout>
           }
         />
