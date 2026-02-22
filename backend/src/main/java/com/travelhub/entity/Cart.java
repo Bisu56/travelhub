@@ -1,5 +1,6 @@
 package com.travelhub.entity;
 
+import com.travelhub.entity.enums.CartStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,4 +33,4 @@ import java.time.LocalDateTime;
         @CreationTimestamp
         private LocalDateTime createdAt;
     }
-}
+
