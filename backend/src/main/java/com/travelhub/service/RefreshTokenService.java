@@ -3,11 +3,11 @@ package com.travelhub.service;
 import com.travelhub.entity.RefreshToken;
 import com.travelhub.entity.User;
 import com.travelhub.repository.RefreshTokenRepository;
-import com.travelhub.service.AuditService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -17,10 +17,10 @@ public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final AuditService auditService;
 
-    // 1 day by default (ms)
+    // 1 day duration in milliseconds
     private final long refreshTokenDuration = 86400000;
 
-    // Create new refresh token
+    // ---------------- Create / Issue Token ----------------
     public String createRefreshToken(User user) {
         RefreshToken token = RefreshToken.builder()
                 .token(UUID.randomUUID().toString())
@@ -34,26 +34,39 @@ public class RefreshTokenService {
         return token.getToken();
     }
 
-    // Revoke / mark old token as used
+    // ---------------- Revoke / Invalidate Token ----------------
     public void revokeRefreshToken(String token) {
         refreshTokenRepository.findByToken(token).ifPresent(t -> {
             t.setRevoked(true);
             t.setUsed(true);
             refreshTokenRepository.save(t);
+            auditService.logAction(t.getUser().getEmail() != null ? t.getUser().getEmail() : t.getUser().getPhone(),
+                    "REFRESH_TOKEN_REVOKED");
         });
     }
 
-    // Validate refresh token
+    // ---------------- Validate Token ----------------
     public boolean validateRefreshToken(String token) {
         return refreshTokenRepository.findByToken(token)
                 .filter(t -> !t.isRevoked() && !t.isUsed() && t.getExpiryDate().isAfter(Instant.now()))
                 .isPresent();
     }
 
-    // Get user from refresh token
+    // ---------------- Get User From Token ----------------
     public User getUserFromToken(String token) {
         return refreshTokenRepository.findByToken(token)
                 .map(RefreshToken::getUser)
                 .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+    }
+
+    public void revokeAllUserTokens(User user) {
+        List<RefreshToken> tokens = refreshTokenRepository.findAllByUserAndRevokedFalseAndUsedFalse(user);
+        for (RefreshToken t : tokens) {
+            t.setRevoked(true);
+            t.setUsed(true);
+        }
+        refreshTokenRepository.saveAll(tokens);
+        auditService.logAction(user.getEmail() != null ? user.getEmail() : user.getPhone(),
+                "ALL_USER_TOKENS_REVOKED");
     }
 }
