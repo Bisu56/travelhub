@@ -1,19 +1,23 @@
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, Outlet } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import {
-  FiGrid, FiPackage, FiPlusCircle, FiLogOut, FiChevronRight, FiBell, FiSearch, FiChevronDown
+  FiGrid, FiPackage, FiPlusCircle, FiLogOut, FiChevronRight, FiBell, FiSearch, FiChevronDown, FiDollarSign
 } from 'react-icons/fi'
 
 const navItems = [
   { path: '/agent/dashboard', icon: <FiGrid size={20} />, label: 'Dashboard' },
   { path: '/agent/packages', icon: <FiPackage size={20} />, label: 'My Packages' },
   { path: '/agent/packages/create', icon: <FiPlusCircle size={20} />, label: 'Create Package' },
+  { path: '/agent/earnings', icon: <FiDollarSign size={20} />, label: 'Earnings' },
 ]
 
 const pageTitles = {
+  '/agent': 'Dashboard',
   '/agent/dashboard': 'Dashboard',
   '/agent/packages': 'My Packages',
   '/agent/packages/create': 'Create Package',
+  '/agent/packages/edit': 'Edit Package',
+  '/agent/earnings': 'Earnings',
 }
 
 const linkClass = ({ isActive }) =>
@@ -22,7 +26,7 @@ const linkClass = ({ isActive }) =>
      ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30'
      : 'text-emerald-100 hover:bg-white/10 hover:text-white'}`
 
-const AgentLayout = ({ children }) => {
+const AgentLayout = () => {
   const auth = useAuth()
   const user = auth?.user || null
   const logout = auth?.logout || (() => {})
@@ -118,7 +122,7 @@ const AgentLayout = ({ children }) => {
         </header>
 
         <main className="flex-1 p-6 overflow-auto">
-          {children}
+          <Outlet />
         </main>
       </div>
     </div>

@@ -1,14 +1,19 @@
-import { useLocation } from 'react-router-dom'
+import { useLocation, Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import { FiBell, FiSearch, FiChevronDown } from 'react-icons/fi'
 
 const pageTitles = {
+  '/admin': 'Dashboard',
   '/admin/dashboard': 'Dashboard',
   '/admin/agents': 'Agent Approvals',
   '/admin/destinations': 'Destinations',
+  '/admin/reviews': 'Reviews',
+  '/admin/commissions': 'Commissions',
+  '/admin/payouts': 'Payouts',
+  '/admin/email-preview': 'Email Templates',
 }
 
-const AdminLayout = ({ children }) => {
+const AdminLayout = () => {
   const location = useLocation()
   const pageTitle = pageTitles[location.pathname] || 'Admin'
 
@@ -46,7 +51,7 @@ const AdminLayout = ({ children }) => {
         </header>
         
         <main className="flex-1 p-6 overflow-auto">
-          {children}
+          <Outlet />
         </main>
       </div>
     </div>
