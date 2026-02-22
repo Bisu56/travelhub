@@ -1,4 +1,5 @@
 package com.travelhub.Filter;
+
 import com.travelhub.entity.User;
 import com.travelhub.repository.UserRepository;
 import com.travelhub.service.JwtService;
@@ -9,12 +10,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
+
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -39,23 +42,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (!jwtService.validateToken(token)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"error\":\"Invalid or expired token\"}");
             return;
         }
 
-        String loginId = jwtService.extractUsername(token);
-
-        User user = userRepository
-                .findByEmailOrPhone(loginId, loginId)
-                .orElse(null);
+        Long userId = jwtService.extractUserId(token);
+        User user = userRepository.findById(userId).orElse(null);
 
         if (user == null || !Boolean.TRUE.equals(user.getActive())) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"error\":\"User inactive or not found\"}");
             return;
         }
 
+        // Set authentication
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(
-                        user.getId(),  // better than email
+                        user.getId(),
                         null,
                         Collections.singletonList(
                                 new SimpleGrantedAuthority("ROLE_" + user.getRole().name())

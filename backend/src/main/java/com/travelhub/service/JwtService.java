@@ -1,8 +1,10 @@
 package com.travelhub.service;
+
 import com.travelhub.entity.User;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
 import java.util.Date;
 
 @Service
@@ -20,7 +22,9 @@ public class JwtService {
     // Generate Access Token
     public String generateAccessToken(User user) {
         return Jwts.builder()
-                .setSubject(user.getEmail())
+                .setSubject(String.valueOf(user.getId()))  // user ID as subject
+                .claim("email", user.getEmail())
+                .claim("phone", user.getPhone())
                 .claim("role", user.getRole().name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
@@ -31,7 +35,7 @@ public class JwtService {
     // Generate Refresh Token
     public String generateRefreshToken(User user) {
         return Jwts.builder()
-                .setSubject(user.getEmail())
+                .setSubject(String.valueOf(user.getId()))
                 .claim("role", user.getRole().name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpiration))
@@ -39,34 +43,42 @@ public class JwtService {
                 .compact();
     }
 
-    // Validate Token (Access or Refresh)
+    // Validate Token
     public boolean validateToken(String token) {
         try {
-            Jwts.parser()
-                    .setSigningKey(jwtSecret)
-                    .parseClaimsJws(token);
+            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
             return true;
-        } catch (ExpiredJwtException ex) {
-            System.out.println("Token expired: " + ex.getMessage());
-        } catch (UnsupportedJwtException ex) {
-            System.out.println("Unsupported JWT: " + ex.getMessage());
-        } catch (MalformedJwtException ex) {
-            System.out.println("Malformed JWT: " + ex.getMessage());
-        } catch (SignatureException ex) {
-            System.out.println("Invalid signature: " + ex.getMessage());
-        } catch (IllegalArgumentException ex) {
-            System.out.println("Token is null or empty: " + ex.getMessage());
+        } catch (JwtException | IllegalArgumentException ex) {
+            System.out.println("JWT validation failed: " + ex.getMessage());
+            return false;
         }
-        return false;
     }
 
-    // Extract Email (Username)
-    public String extractUsername(String token) {
+    // Extract User ID
+    public Long extractUserId(String token) {
+        return Long.parseLong(Jwts.parser()
+                .setSigningKey(jwtSecret)
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject());
+    }
+
+    // Extract Email
+    public String extractEmail(String token) {
         return Jwts.parser()
                 .setSigningKey(jwtSecret)
                 .parseClaimsJws(token)
                 .getBody()
-                .getSubject();
+                .get("email", String.class);
+    }
+
+    // Extract Phone
+    public String extractPhone(String token) {
+        return Jwts.parser()
+                .setSigningKey(jwtSecret)
+                .parseClaimsJws(token)
+                .getBody()
+                .get("phone", String.class);
     }
 
     // Extract Role
@@ -78,7 +90,7 @@ public class JwtService {
                 .get("role", String.class);
     }
 
-    // Check if token is expired
+    // Check Expiration
     public boolean isTokenExpired(String token) {
         try {
             Date expiration = Jwts.parser()
