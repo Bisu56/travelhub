@@ -137,6 +137,7 @@ public class AuthService {
 
 
     }
+
         public boolean logout(String refreshToken) {
             if (refreshToken == null || refreshToken.isEmpty()) {
                 throw new IllegalArgumentException("Refresh token is required for logout");
@@ -149,8 +150,12 @@ public class AuthService {
                 return true;
             }
 
+
             return false;
         }
+    public String generateAccessToken(User user) {
+        return jwtService.generateAccessToken(user);
+    }
     }
 
 
