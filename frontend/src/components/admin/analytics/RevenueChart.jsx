@@ -20,15 +20,15 @@ ChartJS.register(
   Legend
 );
 
-const EarningsChart = ({ commissions }) => {
-  if (!commissions || commissions.length === 0) return <p>No earnings data yet</p>;
-  
-  const data = {
-    labels: commissions.map((c) => c.bookingDate),
+const RevenueChart = ({ data }) => {
+  if (!data || data.length === 0) return <p>No revenue data available</p>;
+
+  const chartData = {
+    labels: data.map((d) => d.month),
     datasets: [
       {
-        label: "Commission Earnings",
-        data: commissions.map((c) => c.amount),
+        label: "Revenue",
+        data: data.map((d) => d.amount),
         borderColor: "rgb(75, 192, 192)",
         backgroundColor: "rgba(75, 192, 192, 0.5)",
       },
@@ -38,17 +38,12 @@ const EarningsChart = ({ commissions }) => {
   const options = {
     responsive: true,
     plugins: {
-      legend: {
-        position: "top",
-      },
-      title: {
-        display: true,
-        text: "Earnings Over Time",
-      },
+      legend: { position: "top" },
+      title: { display: true, text: "Monthly Revenue" },
     },
   };
 
-  return <Line data={data} options={options} />;
+  return <Line data={chartData} options={options} />;
 };
 
-export default EarningsChart;
+export default RevenueChart;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getAgentEarnings } from "../services/earningsApi";
+import { getAgentEarnings, exportEarnings } from "../services/earningsApi";
 import EarningsSummaryCard from "../components/EarningsSummaryCard";
 import CommissionTable from "../components/CommissionTable";
 import EarningsChart from "../components/EarningsChart";
@@ -8,20 +8,47 @@ import PayoutRequestForm from "../components/PayoutRequestForm";
 
 const AgentEarningsDashboard = () => {
   const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadEarnings = async () => {
-      const res = await getAgentEarnings();
-      setData(res.data);
-    };
-    loadEarnings();
+    fetchEarnings();
   }, []);
 
-  if (!data) return <p>Loading...</p>;
+  const fetchEarnings = async () => {
+    try {
+      const res = await getAgentEarnings();
+      setData(res.data);
+    } catch (error) {
+      console.error("Failed to fetch earnings", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const res = await exportEarnings();
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "earnings.csv");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      alert("Failed to export earnings");
+    }
+  };
+
+  if (loading) return <p>Loading...</p>;
+  if (!data) return <p>No data available</p>;
 
   return (
     <div>
       <h2>My Earnings</h2>
+      <button onClick={handleExport} style={{ marginBottom: "20px" }}>
+        Export Earnings (CSV)
+      </button>
 
       <EarningsSummaryCard data={data.summary} />
       <EarningsChart commissions={data.commissions} />

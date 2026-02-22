@@ -1,18 +1,31 @@
-import axios from "axios";
-
-const API = "http://localhost:8080/api";
+import axiosInstance from '../../../services/axiosInstance';
 
 export const getAgentEarnings = () =>
-  axios.get(`${API}/agent/earnings`);
+  axiosInstance.get('/agent/earnings');
 
 export const createPayoutRequest = (data) =>
-  axios.post(`${API}/agent/payout-request`, data);
+  axiosInstance.post('/agent/payout-request', data);
 
 export const getPendingPayouts = () =>
-  axios.get(`${API}/admin/payout-requests/pending`);
+  axiosInstance.get('/admin/payout-requests/pending');
 
 export const approvePayout = (id) =>
-  axios.put(`${API}/admin/payout-requests/${id}/approve`);
+  axiosInstance.put(`/admin/payout-requests/${id}/approve`);
+
+export const rejectPayout = (id) =>
+  axiosInstance.put(`/admin/payout-requests/${id}/reject`);
 
 export const calculateCommission = () =>
-  axios.post(`${API}/admin/commissions/calculate`);
+  axiosInstance.post('/admin/commissions/calculate');
+
+export const getAgentSummary = () =>
+  axiosInstance.get('/agent/earnings/summary');
+
+export const getPayoutHistory = () =>
+  axiosInstance.get('/agent/payouts');
+
+export const updateCommissionRate = (rate) =>
+  axiosInstance.put('/admin/settings/commission-rate', { rate });
+
+export const exportEarnings = () =>
+  axiosInstance.get('/agent/earnings/export', { responseType: 'blob' });

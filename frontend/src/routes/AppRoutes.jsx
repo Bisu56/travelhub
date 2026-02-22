@@ -29,8 +29,8 @@ import AdminDashboard from '../pages/admin/AdminDashboard';
 import AgentApproval from '../pages/admin/AgentApproval';
 import Destination from '../pages/admin/Destination';
 import AdminReviewModeration from '../features/reviews/pages/AdminReviewModeration';
-import AdminCommissionManagement from '../pages/admin/AdminCommissionManagement';
-import AdminPayoutApproval from '../pages/admin/AdminPayoutApproval';
+import AdminCommissionManagement from '../features/earnings/pages/AdminCommissionManagement';
+import AdminPayoutApproval from '../features/earnings/pages/AdminPayoutApproval';
 
 // Agent layout & pages
 import AgentLayout from '../components/layout/AgentLayout';
@@ -38,7 +38,7 @@ import AgentDashboard from '../pages/agent/AgentDashboard';
 import AgentPackages from '../pages/agent/AgentPackage';
 import CreatePackage from '../pages/agent/CreatePackages';
 import EditPackage from '../pages/agent/EditPackage';
-import AgentEarningsDashboard from '../pages/agent/AgentEarningsDashboard';
+import AgentEarningsDashboard from '../features/earnings/pages/AgentEarningsDashboard';
 
 function AppRoutes() {
   return (

@@ -31,3 +31,33 @@ export const updateDestination = (id, data) =>
 /** Delete destination by ID */
 export const deleteDestination = (id) =>
   axiosInstance.delete(`/admin/destinations/${id}`)
+
+// ─── ANALYTICS ENDPOINTS ─────────────────────────────────
+
+/** Get dashboard statistics */
+export const getDashboardStats = () =>
+  axiosInstance.get('/admin/analytics/stats')
+
+/** Get revenue data */
+export const getRevenueData = (from, to) =>
+  axiosInstance.get('/admin/analytics/revenue', { params: { from, to } })
+
+/** Get booking trends */
+export const getBookingTrends = (from, to) =>
+  axiosInstance.get('/admin/analytics/bookings', { params: { from, to } })
+
+/** Get user growth data */
+export const getUserGrowth = (from, to) =>
+  axiosInstance.get('/admin/analytics/users', { params: { from, to } })
+
+/** Get popular destinations */
+export const getPopularDestinations = () =>
+  axiosInstance.get('/admin/analytics/destinations')
+
+/** Get top agents */
+export const getTopAgents = () =>
+  axiosInstance.get('/admin/analytics/top-agents')
+
+/** Export analytics data */
+export const exportAnalytics = () =>
+  axiosInstance.get('/admin/analytics/export', { responseType: 'blob' })

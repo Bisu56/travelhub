@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { updateCommissionRate } from "../../../services/earningsService";
+import { updateCommissionRate } from "../services/earningsApi";
 
 const CommissionRateConfig = () => {
   const [rate, setRate] = useState("");
