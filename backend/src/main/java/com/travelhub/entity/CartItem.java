@@ -45,7 +45,7 @@ public class CartItem {
 
     @PrePersist
     @PreUpdate
-    public void calculateSubtotal() {
+    public void recalculateSubtotal() {
         if (unitPrice != null && quantity != null) {
             this.subtotal = unitPrice.multiply(BigDecimal.valueOf(quantity));
         }
