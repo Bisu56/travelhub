@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
     @RequiredArgsConstructor
@@ -25,46 +26,63 @@ import java.util.List;
         private final CartService cartService;
         private final List<PaymentGateway> gateways;
 
-        @Transactional
-        public PaymentInitiateResponseDTO initiatePayment(
-                User user,
-                Long cartId,
-                String gatewayName
-        ) throws Exception {
+    @Transactional
+    public PaymentInitiateResponseDTO initiatePayment(
+            User user,
+            Long cartId,
+            String gatewayName
+    ) throws Exception {
 
-            Cart cart = cartRepository.findById(cartId)
-                    .orElseThrow(() -> new IllegalStateException("Cart not found"));
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new IllegalStateException("Cart not found"));
 
-            if (cart.getStatus() != CartStatus.CHECKED_OUT)
-                throw new IllegalStateException("Cart not ready for payment");
+        if (cart.getStatus() != CartStatus.CHECKED_OUT)
+            throw new IllegalStateException("Cart not ready for payment");
 
-            Payment payment = Payment.builder()
-                    .cart(cart)
-                    .user(user)
-                    .amount(cart.getTotalAmount())
-                    .currency("NRS")
-                    .gateway(gatewayName)
-                    .paymentStatus(PaymentStatus.UNPAID)
-                    .createdAt(LocalDateTime.now())
-                    .build();
+        Optional<Payment> existingPayment =
+                paymentRepository.findByCartId(cartId);
 
-            paymentRepository.save(payment);
+        if (existingPayment.isPresent()) {
 
-            PaymentGateway gateway = gateways.stream()
-                    .filter(g -> g.getGatewayName().equalsIgnoreCase(gatewayName))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("Unsupported gateway"));
+            Payment payment = existingPayment.get();
 
-            var response = gateway.createPayment(payment);
+            if (payment.getPaymentStatus() == PaymentStatus.PAID)
+                throw new IllegalStateException("Cart already paid");
 
-            payment.setPaymentSessionId(response.getSessionId());
-            paymentRepository.save(payment);
-
+            // return same session if still unpaid
             return PaymentInitiateResponseDTO.builder()
-                    .paymentUrl(response.getPaymentUrl())
-                    .sessionId(response.getSessionId())
+                    .paymentUrl(null)
+                    .sessionId(payment.getPaymentSessionId())
                     .build();
         }
+
+        Payment payment = Payment.builder()
+                .cart(cart)
+                .user(user)
+                .amount(cart.getTotalAmount())
+                .currency("NRS")
+                .gateway(gatewayName)
+                .paymentStatus(PaymentStatus.UNPAID)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        paymentRepository.save(payment);
+
+        PaymentGateway gateway = gateways.stream()
+                .filter(g -> g.getGatewayName().equalsIgnoreCase(gatewayName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Unsupported gateway"));
+
+        var response = gateway.createPayment(payment);
+
+        payment.setPaymentSessionId(response.getSessionId());
+        paymentRepository.save(payment);
+
+        return PaymentInitiateResponseDTO.builder()
+                .paymentUrl(response.getPaymentUrl())
+                .sessionId(response.getSessionId())
+                .build();
+    }
 
         @Transactional
         public void markPaymentSuccess(String sessionId, String transactionId) {
