@@ -4,14 +4,18 @@ import { motion } from "motion/react";
 import { getDestinations } from "../../services/publicService";
 import { 
   FiArrowRight, 
-  FiMapPin, 
   FiStar, 
   FiCalendar,
   FiGlobe,
   FiShield,
   FiAward,
-  FiNavigation,
-  FiSend
+  FiSend,
+  FiTruck,
+  FiHome,
+  FiBox,
+  FiMap,
+  FiBuilding2,
+  FiGift
 } from "react-icons/fi";
 
 const Home = () => {
@@ -95,28 +99,28 @@ const Home = () => {
                 onClick={() => setActiveTab("flights")}
                 className={`px-6 py-4 border-b-2 font-bold text-sm flex items-center gap-2 whitespace-nowrap transition-all ${activeTab === "flights" ? "border-cyan-600 text-cyan-600" : "border-transparent text-slate-500 hover:text-cyan-600"}`}
               >
-                <FiNavigation className="w-4 h-4" /> Flights
+                <FiTruck size={18} /> Flights
               </button>
               <button 
                 onClick={() => setActiveTab("hotels")}
                 className={`px-6 py-4 border-b-2 font-bold text-sm flex items-center gap-2 whitespace-nowrap transition-all ${activeTab === "hotels" ? "border-cyan-600 text-cyan-600" : "border-transparent text-slate-500 hover:text-cyan-600"}`}
               >
-                <FiMapPin className="w-4 h-4" /> Hotels
+                <FiBuilding2 size={18} /> Hotels
               </button>
               <button 
                 onClick={() => setActiveTab("packages")}
                 className={`px-6 py-4 border-b-2 font-bold text-sm flex items-center gap-2 whitespace-nowrap transition-all ${activeTab === "packages" ? "border-cyan-600 text-cyan-600" : "border-transparent text-slate-500 hover:text-cyan-600"}`}
               >
-                <FiAward className="w-4 h-4" /> Packages
+                <FiGift size={18} /> Packages
               </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-2 p-2">
               <div className="relative flex items-center">
-                <FiMapPin className="absolute left-3 text-slate-400 w-5 h-5" />
+                <FiHome className="absolute left-3 text-slate-400 w-5 h-5" />
                 <input type="text" placeholder="From where?" className="w-full pl-10 pr-4 py-4 bg-slate-50 border-none rounded-lg focus:ring-2 focus:ring-cyan-500 text-sm outline-none" />
               </div>
               <div className="relative flex items-center">
-                <FiNavigation className="absolute left-3 text-slate-400 w-5 h-5" />
+                <FiMap className="absolute left-3 text-slate-400 w-5 h-5" />
                 <input type="text" placeholder="To where?" className="w-full pl-10 pr-4 py-4 bg-slate-50 border-none rounded-lg focus:ring-2 focus:ring-cyan-500 text-sm outline-none" />
               </div>
               <div className="relative flex items-center">
