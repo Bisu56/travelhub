@@ -1,14 +1,10 @@
 package com.travelhub.payment;
 
-import com.travelhub.entity.User;
-import com.travelhub.entity.Cart;
+import com.travelhub.entity.Payment;
 
 public interface PaymentGateway {
 
+    String getGatewayName();
 
-    String createPaymentSession(User user, Cart cart);
-
-
-    boolean verifyPayment(String sessionId);
-
+    PaymentGatewayResponse createPayment(Payment payment) throws Exception;
 }
