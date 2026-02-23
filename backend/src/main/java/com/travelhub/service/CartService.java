@@ -6,14 +6,12 @@ import com.travelhub.entity.CartItem;
 import com.travelhub.entity.User;
 import com.travelhub.entity.enums.CartStatus;
 import com.travelhub.entity.enums.ServiceType;
-import com.travelhub.repository.CartItemRepository;
 import com.travelhub.repository.CartRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,21 +21,20 @@ import java.util.List;
 public class CartService {
 
     private final CartRepository cartRepository;
-    private final CartItemRepository cartItemRepository;
 
     private final FlightService flightService;
     private final VehicleService vehicleService;
     private final DestinationService destinationService;
 
-    // =========================================================
-    // ADD TO CART
-    // =========================================================
     @Transactional
     public CartResponseDTO addToCart(User user, AddToCartRequest request) {
 
         validateRequest(request);
 
         Cart cart = getOrCreateCart(user);
+
+        if (cart.getStatus() != CartStatus.ACTIVE)
+            throw new IllegalStateException("Cart is not active");
 
         BigDecimal latestPrice = fetchLatestPrice(request);
 
@@ -60,13 +57,13 @@ public class CartService {
 
         return mapToDTO(cart);
     }
-
-    // =========================================================
-    // REMOVE ITEM
-    // =========================================================
     @Transactional
     public void removeItem(User user, Long itemId) {
+
         Cart cart = getActiveCart(user);
+
+        if (cart.getStatus() != CartStatus.ACTIVE)
+            throw new IllegalStateException("Cannot modify checked-out cart");
 
         CartItem item = cart.getItems()
                 .stream()
@@ -76,18 +73,23 @@ public class CartService {
 
         cart.getItems().remove(item);
         cart.recalculateTotal();
+
         cartRepository.save(cart);
     }
 
-    // =========================================================
-    // VIEW CART (LIVE RECALCULATION)
-    // =========================================================
+
     @Transactional
     public CartResponseDTO viewCart(User user) {
+
         Cart cart = getActiveCart(user);
 
+        if (cart.getStatus() != CartStatus.ACTIVE)
+            throw new IllegalStateException("Cart is not active");
+
         for (CartItem item : cart.getItems()) {
+
             BigDecimal latestPrice = fetchLatestPriceFromItem(item);
+
             item.setUnitPrice(latestPrice);
             item.recalculateSubtotal();
         }
@@ -98,13 +100,14 @@ public class CartService {
         return mapToDTO(cart);
     }
 
-    // =========================================================
-    // CHECKOUT & PAYMENT FLOW
-    // =========================================================
+
     @Transactional
-    public CheckoutResponseDTO checkout(User user) {
+    public CartResponseDTO checkout(User user) {
 
         Cart cart = getActiveCart(user);
+
+        if (cart.getStatus() != CartStatus.ACTIVE)
+            throw new IllegalStateException("Cart already checked out");
 
         if (cart.getExpiresAt().isBefore(LocalDateTime.now())) {
             cart.setStatus(CartStatus.EXPIRED);
@@ -112,99 +115,95 @@ public class CartService {
             throw new IllegalStateException("Cart expired");
         }
 
-        if (cart.getItems().isEmpty()) {
+        if (cart.getItems().isEmpty())
             throw new IllegalStateException("Cart is empty");
-        }
 
-        // Final recalculation before booking
-        viewCart(user);
-
-        // Book services from the cart items
         for (CartItem item : cart.getItems()) {
-            switch (item.getServiceType()) {
-                case FLIGHT -> flightService.createBookingFromCart(user, item);
-                case VEHICLE -> vehicleService.createBookingFromCart(user, item);
-                case DESTINATION -> destinationService.createBookingFromCart(user, item);
-                default -> throw new IllegalStateException("Unsupported service type");
-            }
+            BigDecimal latestPrice = fetchLatestPriceFromItem(item);
+            item.setUnitPrice(latestPrice);
+            item.recalculateSubtotal();
         }
+
+        cart.recalculateTotal();
 
         cart.setStatus(CartStatus.CHECKED_OUT);
+
         cartRepository.save(cart);
 
-        // Generate payment URL
-        String paymentUrl = generatePaymentUrl(cart);
+        return mapToDTO(cart);
+    }
+    @Transactional
+    public void markCartCompleted(Cart cart) {
 
-        return new CheckoutResponseDTO(paymentUrl);
+        if (cart.getStatus() != CartStatus.CHECKED_OUT)
+            throw new IllegalStateException("Invalid cart state for completion");
+
+        cart.setStatus(CartStatus.COMPLETED);
+
+
+        cartRepository.save(cart);
     }
 
-    // =========================================================
-    // PAYMENT PROCESS
-    // =========================================================
-    public String processPayment(String paymentUrl) {
-        // Payment gateway logic here (simulated)
-        updateBookingStatuses(paymentUrl);
-        return "Payment successful, booking confirmed.";
-    }
-
-    private void updateBookingStatuses(String paymentUrl) {
-        // After payment success, update all bookings in the cart to PAID
-        // Could also be triggered via webhook
-    }
-
-    // =========================================================
-    // HELPERS
-    // =========================================================
     private Cart getOrCreateCart(User user) {
+
         return cartRepository.findByUserAndStatus(user, CartStatus.ACTIVE)
                 .orElseGet(() -> {
+
                     Cart newCart = new Cart();
                     newCart.setUser(user);
                     newCart.setStatus(CartStatus.ACTIVE);
                     newCart.setExpiresAt(LocalDateTime.now().plusMinutes(30));
                     newCart.setItems(new ArrayList<>());
+
                     return cartRepository.save(newCart);
                 });
     }
 
     private Cart getActiveCart(User user) {
+
         return cartRepository.findByUserAndStatus(user, CartStatus.ACTIVE)
                 .orElseThrow(() -> new IllegalStateException("No active cart found"));
     }
 
     private void validateRequest(AddToCartRequest request) {
+
         if (request.getServiceType() == ServiceType.VEHICLE) {
             if (request.getStartDate() == null || request.getEndDate() == null)
                 throw new IllegalArgumentException("Vehicle booking requires start and end date");
         }
+
         if (request.getServiceType() == ServiceType.FLIGHT ||
                 request.getServiceType() == ServiceType.DESTINATION) {
+
             if (request.getTravelDate() == null)
                 throw new IllegalArgumentException("Travel date is required");
         }
     }
 
     private BigDecimal fetchLatestPrice(AddToCartRequest request) {
+
         return switch (request.getServiceType()) {
             case FLIGHT -> flightService.getPriceForCart(request);
             case VEHICLE -> vehicleService.getPriceForCart(request);
             case DESTINATION -> destinationService.getPriceForCart(request);
         };
     }
+
     private BigDecimal fetchLatestPriceFromItem(CartItem item) {
+
         return switch (item.getServiceType()) {
             case FLIGHT -> flightService.getPriceById(
                     item.getReferenceId(),
                     item.getQuantity(),
                     item.getTravelDate(),
-                    item.getFlightClass() // pass flight class if needed
+                    item.getFlightClass()
             );
             case VEHICLE -> vehicleService.getPriceById(
                     item.getReferenceId(),
                     item.getStartDate(),
                     item.getEndDate(),
-                    item.getQuantity(),   // number of seats if partial booking
-                    item.getFullVehicle() // flag for full vehicle booking
+                    item.getQuantity(),
+                    item.getFullVehicle()
             );
             case DESTINATION -> destinationService.getPriceById(
                     item.getReferenceId(),
@@ -214,11 +213,8 @@ public class CartService {
         };
     }
 
-    private String generatePaymentUrl(Cart cart) {
-        return "https://payment.travelhub.com/checkout/" + cart.getId();
-    }
-
     private CartResponseDTO mapToDTO(Cart cart) {
+
         List<CartItemResponseDTO> items = cart.getItems().stream()
                 .map(item -> CartItemResponseDTO.builder()
                         .itemId(item.getId())
