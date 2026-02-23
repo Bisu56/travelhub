@@ -42,7 +42,7 @@ import java.util.List;
                     .cart(cart)
                     .user(user)
                     .amount(cart.getTotalAmount())
-                    .currency("USD")
+                    .currency("NRS")
                     .gateway(gatewayName)
                     .paymentStatus(PaymentStatus.UNPAID)
                     .createdAt(LocalDateTime.now())
