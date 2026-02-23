@@ -60,23 +60,23 @@ function Home() {
           </p>
 
           {/* Search Widget */}
-          <div className="bg-white dark:bg-slate-900 p-2 rounded-xl shadow-2xl overflow-hidden">
-            <div className="flex border-b border-slate-100 dark:border-slate-800 mb-4 px-4">
+          <div className="bg-white p-2 rounded-xl shadow-2xl overflow-hidden">
+            <div className="flex border-b border-slate-100 mb-4 px-4">
               <button 
                 onClick={() => setSearchType('flights')}
-                className={`px-6 py-4 border-b-2 font-bold text-sm flex items-center gap-2 transition-all ${searchType === 'flights' ? 'border-cyan-600 text-cyan-600' : 'border-transparent text-slate-500 hover:text-cyan-600'}`}
+                className={`px-6 py-4 border-b-2 font-bold text-sm flex items-center gap-2 transition-all ${searchType === 'flights' ? 'border-cyan-600 text-cyan-600' : 'border-transparent text-gray-500 hover:text-cyan-600'}`}
               >
                 <FiSend size={18} /> Flights
               </button>
               <button 
                 onClick={() => setSearchType('hotels')}
-                className={`px-6 py-4 border-b-2 font-bold text-sm flex items-center gap-2 transition-all ${searchType === 'hotels' ? 'border-cyan-600 text-cyan-600' : 'border-transparent text-slate-500 hover:text-cyan-600'}`}
+                className={`px-6 py-4 border-b-2 font-bold text-sm flex items-center gap-2 transition-all ${searchType === 'hotels' ? 'border-cyan-600 text-cyan-600' : 'border-transparent text-gray-500 hover:text-cyan-600'}`}
               >
                 <FiHome size={18} /> Hotels
               </button>
               <button 
                 onClick={() => setSearchType('packages')}
-                className={`px-6 py-4 border-b-2 font-bold text-sm flex items-center gap-2 transition-all ${searchType === 'packages' ? 'border-cyan-600 text-cyan-600' : 'border-transparent text-slate-500 hover:text-cyan-600'}`}
+                className={`px-6 py-4 border-b-2 font-bold text-sm flex items-center gap-2 transition-all ${searchType === 'packages' ? 'border-cyan-600 text-cyan-600' : 'border-transparent text-gray-500 hover:text-cyan-600'}`}
               >
                 <FiBox size={18} /> Packages
               </button>
@@ -84,9 +84,9 @@ function Home() {
             
             <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-4 gap-2 p-2">
               <div className="relative flex items-center">
-                <span className="absolute left-3 text-slate-400"><FiMapPin /></span>
+                <span className="absolute left-3 text-gray-400"><FiMapPin /></span>
                 <input 
-                  className="w-full pl-10 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-lg focus:ring-2 focus:ring-cyan-600 text-sm" 
+                  className="w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-600 focus:border-transparent text-sm text-gray-900 placeholder:text-gray-400" 
                   placeholder="From where?" 
                   type="text"
                   value={searchQuery}
@@ -94,17 +94,17 @@ function Home() {
                 />
               </div>
               <div className="relative flex items-center">
-                <span className="absolute left-3 text-slate-400"><FiSend /></span>
+                <span className="absolute left-3 text-gray-400"><FiSend /></span>
                 <input 
-                  className="w-full pl-10 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-lg focus:ring-2 focus:ring-cyan-600 text-sm" 
+                  className="w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-600 focus:border-transparent text-sm text-gray-900 placeholder:text-gray-400" 
                   placeholder="To where?" 
                   type="text"
                 />
               </div>
               <div className="relative flex items-center">
-                <span className="absolute left-3 text-slate-400"><FiCalendar /></span>
+                <span className="absolute left-3 text-gray-400"><FiCalendar /></span>
                 <input 
-                  className="w-full pl-10 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-lg focus:ring-2 focus:ring-cyan-600 text-sm" 
+                  className="w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-600 focus:border-transparent text-sm text-gray-900 placeholder:text-gray-400" 
                   placeholder="Travel dates" 
                   type="text"
                 />
@@ -121,8 +121,8 @@ function Home() {
       <section className="max-w-7xl mx-auto px-4 py-20">
         <div className="flex justify-between items-end mb-10">
           <div>
-            <h3 className="text-3xl font-black text-slate-900 dark:text-white mb-2">Popular Destinations</h3>
-            <p className="text-slate-500 dark:text-slate-400">Curated travel spots across Nepal and the UAE</p>
+            <h3 className="text-3xl font-black text-gray-900 mb-2">Popular Destinations</h3>
+            <p className="text-gray-500">Curated travel spots across Nepal and the UAE</p>
           </div>
           <Link className="text-cyan-600 font-bold flex items-center gap-1 hover:underline" to="/packages">
             View all <FiArrowRight />
@@ -151,11 +151,11 @@ function Home() {
       </section>
 
       {/* Why Choose Us */}
-      <section className="bg-white dark:bg-slate-900 py-20">
+      <section className="bg-white py-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h3 className="text-3xl font-black mb-4">Why Choose TravelHub?</h3>
-            <p className="text-slate-500 max-w-2xl mx-auto">We specialize in cross-border travel between Nepal and Dubai, ensuring every detail is handled with care.</p>
+            <h3 className="text-3xl font-black mb-4 text-gray-900">Why Choose TravelHub?</h3>
+            <p className="text-gray-500 max-w-2xl mx-auto">We specialize in cross-border travel between Nepal and Dubai, ensuring every detail is handled with care.</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
@@ -164,8 +164,8 @@ function Home() {
                 <div className="w-16 h-16 bg-cyan-600/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
                   <feature.icon className="text-cyan-600 text-3xl" />
                 </div>
-                <h4 className="text-xl font-bold mb-3">{feature.title}</h4>
-                <p className="text-slate-500 text-sm leading-relaxed">{feature.description}</p>
+                <h4 className="text-xl font-bold mb-3 text-gray-900">{feature.title}</h4>
+                <p className="text-gray-500 text-sm leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -181,7 +181,7 @@ function Home() {
           </div>
           <div className="relative z-10 w-full max-w-md">
             <form className="flex flex-col sm:flex-row gap-3" onSubmit={(e) => e.preventDefault()}>
-              <input className="flex-1 px-6 py-4 rounded-xl border-none focus:ring-4 focus:ring-white/20 text-slate-900" placeholder="Enter your email" type="email"/>
+              <input className="flex-1 px-6 py-4 rounded-xl border-none focus:ring-4 focus:ring-white/20 text-gray-900" placeholder="Enter your email" type="email"/>
               <button className="bg-white text-cyan-600 font-black px-8 py-4 rounded-xl hover:bg-slate-100 transition-all">Subscribe</button>
             </form>
           </div>
