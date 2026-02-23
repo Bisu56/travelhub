@@ -1,8 +1,9 @@
 package com.travelhub.payment;
 
+import com.travelhub.Dtos.PaymentConfirmationDTO;
 import com.travelhub.entity.Payment;
+import com.travelhub.config.KhaltiConfig;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -14,14 +15,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class KhaltiPaymentGateway implements PaymentGateway {
 
-    @Value("${khalti.secret-key}")
-    private String secretKey;
-
-    @Value("${khalti.return-url}")
-    private String returnUrl;
-
-    @Value("${khalti.website-url}")
-    private String websiteUrl;
+    private final KhaltiConfig config;
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @Override
     public String getGatewayName() {
@@ -31,22 +26,19 @@ public class KhaltiPaymentGateway implements PaymentGateway {
     @Override
     public PaymentGatewayResponse createPayment(Payment payment) {
 
-        RestTemplate restTemplate = new RestTemplate();
-
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(secretKey);
+        headers.setBearerAuth(config.getSecretKey());
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         Map<String, Object> body = Map.of(
-                "return_url", returnUrl,
-                "website_url", websiteUrl,
+                "return_url", config.getReturnUrl(),
+                "website_url", config.getWebsiteUrl(),
                 "amount", payment.getAmount().multiply(BigDecimal.valueOf(100)).intValue(),
                 "purchase_order_id", payment.getId().toString(),
                 "purchase_order_name", "TravelHub Booking"
         );
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-
         ResponseEntity<Map> response = restTemplate.exchange(
                 "https://a.khalti.com/api/v2/epayment/initiate/",
                 HttpMethod.POST,
@@ -54,13 +46,31 @@ public class KhaltiPaymentGateway implements PaymentGateway {
                 Map.class
         );
 
-        String paymentUrl = response.getBody() != null
-                ? (String) response.getBody().get("payment_url")
-                : null;
+        String paymentUrl = response.getBody() != null ? (String) response.getBody().get("payment_url") : null;
 
         return PaymentGatewayResponse.builder()
                 .paymentUrl(paymentUrl)
                 .sessionId(payment.getId().toString())
                 .build();
+    }
+    @Override
+    public void verifyPayment(PaymentConfirmationDTO dto) throws Exception {
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(config.getSecretKey());
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        Map<String, Object> body = Map.of(
+                "token", dto.getGatewayTransactionId(),
+                "amount", dto.getSessionId() // amount in paisa; adapt if needed
+        );
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+
+        Map<String, Object> response = restTemplate.postForObject(
+                "https://khalti.com/api/v2/payment/verify/", request, Map.class);
+
+        boolean success = response != null && response.containsKey("idx");
+        dto.setSuccess(success);
     }
 }

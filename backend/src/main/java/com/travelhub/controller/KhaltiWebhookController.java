@@ -29,7 +29,7 @@ public class KhaltiWebhookController {
 
         Map<String, Object> body = Map.of(
                 "token", token,
-                "amount", Integer.parseInt(amount) // amount in paisa
+                "amount", Integer.parseInt(amount) // amount in Nrs
         );
 
         // Add authorization header

@@ -15,11 +15,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
-
-/**
- * VehicleService manages CRUD, approval, search, and booking flows for vehicles.
- * Includes agent/admin role checks, booking validation, and cart integration.
- */
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -30,7 +25,6 @@ public class VehicleService {
     private final ReviewService reviewService;
     private final AuditService auditService;
 
-    // ---------------- Vehicle CRUD & Approval ----------------
 
     public VehicleResponseDTO createVehicle(User agent, VehicleRequestDTO dto) {
         validateAgent(agent);
@@ -118,7 +112,6 @@ public class VehicleService {
                 .stream().map(VehicleMapper::toDTO).collect(Collectors.toList());
     }
 
-    // ---------------- Search & Listing ----------------
 
     public List<VehicleResponseDTO> searchVehicles(String location, LocalDate startDate, LocalDate endDate,
                                                    Double minPrice, Double maxPrice) {
@@ -140,7 +133,6 @@ public class VehicleService {
                 .stream().map(VehicleMapper::toDTO).collect(Collectors.toList());
     }
 
-    // ---------------- Booking ----------------
 
     public VehicleBookingResponseDTO bookVehicle(User user, Long vehicleId, VehicleBookingRequest request) {
         VehicleOffering vehicle = getVehicle(vehicleId);
@@ -248,7 +240,6 @@ public class VehicleService {
                 .collect(Collectors.toList());
     }
 
-    // ---------------- Cart Integration ----------------
 
     public BigDecimal getPriceForCart(AddToCartRequest request) {
         VehicleOffering vehicle = getVehicle(request.getReferenceId());
@@ -282,8 +273,6 @@ public class VehicleService {
         bookingRepository.save(booking);
         return VehicleMapper.bookingToDTO(booking);
     }
-
-    // ---------------- Internal Helpers ----------------
 
     private VehicleOffering getVehicle(Long id) {
         return vehicleRepository.findById(id)
