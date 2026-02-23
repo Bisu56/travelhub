@@ -3,15 +3,11 @@ package com.travelhub.payment;
 import com.travelhub.entity.Payment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
-import java.net.http.HttpHeaders;
 import java.util.Map;
 
 @Service
@@ -20,6 +16,12 @@ public class KhaltiPaymentGateway implements PaymentGateway {
 
     @Value("${khalti.secret-key}")
     private String secretKey;
+
+    @Value("${khalti.return-url}")
+    private String returnUrl;
+
+    @Value("${khalti.website-url}")
+    private String websiteUrl;
 
     @Override
     public String getGatewayName() {
@@ -36,8 +38,8 @@ public class KhaltiPaymentGateway implements PaymentGateway {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         Map<String, Object> body = Map.of(
-                "return_url", "http://localhost:3000/payment-success",
-                "website_url", "http://localhost:3000",
+                "return_url", returnUrl,
+                "website_url", websiteUrl,
                 "amount", payment.getAmount().multiply(BigDecimal.valueOf(100)).intValue(),
                 "purchase_order_id", payment.getId().toString(),
                 "purchase_order_name", "TravelHub Booking"
@@ -52,7 +54,9 @@ public class KhaltiPaymentGateway implements PaymentGateway {
                 Map.class
         );
 
-        String paymentUrl = (String) response.getBody().get("payment_url");
+        String paymentUrl = response.getBody() != null
+                ? (String) response.getBody().get("payment_url")
+                : null;
 
         return PaymentGatewayResponse.builder()
                 .paymentUrl(paymentUrl)

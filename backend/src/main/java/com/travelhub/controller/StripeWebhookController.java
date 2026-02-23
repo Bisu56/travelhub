@@ -1,9 +1,9 @@
 package com.travelhub.controller;
 
-import com.stripe.model.billingportal.Session;
+import com.stripe.model.Event;
+import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.travelhub.payment.PaymentService;
-import jdk.jfr.Event;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +30,7 @@ public class StripeWebhookController {
 
             Session session = (Session) event.getDataObjectDeserializer()
                     .getObject()
-                    .orElseThrow();
+                    .orElseThrow(() -> new IllegalStateException("Invalid session object"));
 
             paymentService.markPaymentSuccess(
                     session.getId(),
