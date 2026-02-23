@@ -27,10 +27,6 @@ public class RefundService {
 
     private static final Logger log = LoggerFactory.getLogger(RefundService.class);
 
-    /**
-     * Called by USERS/AGENTS to request a refund.
-     * Creates a Refund record with status REQUESTED.
-     */
     @Transactional
     public Refund requestRefund(User user, Long paymentId, String reason) {
 
@@ -55,9 +51,7 @@ public class RefundService {
         return refund;
     }
 
-    /**
-     * Only ADMIN can actually execute refund
-     */
+
     @Transactional
     public void executeRefund(User admin, Long refundId) throws Exception {
 

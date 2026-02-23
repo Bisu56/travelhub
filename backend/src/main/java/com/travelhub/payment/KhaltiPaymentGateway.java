@@ -10,7 +10,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.util.Map;
-
 @Service
 @RequiredArgsConstructor
 public class KhaltiPaymentGateway implements PaymentGateway {
@@ -25,7 +24,6 @@ public class KhaltiPaymentGateway implements PaymentGateway {
 
     @Override
     public PaymentGatewayResponse createPayment(Payment payment) {
-
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(config.getSecretKey());
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -39,38 +37,63 @@ public class KhaltiPaymentGateway implements PaymentGateway {
         );
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-        ResponseEntity<Map> response = restTemplate.exchange(
+        Map<String, Object> response = restTemplate.postForObject(
                 "https://a.khalti.com/api/v2/epayment/initiate/",
-                HttpMethod.POST,
                 request,
                 Map.class
         );
 
-        String paymentUrl = response.getBody() != null ? (String) response.getBody().get("payment_url") : null;
+        String paymentUrl = response != null ? (String) response.get("payment_url") : null;
 
         return PaymentGatewayResponse.builder()
                 .paymentUrl(paymentUrl)
                 .sessionId(payment.getId().toString())
                 .build();
     }
+
     @Override
     public void verifyPayment(PaymentConfirmationDTO dto) throws Exception {
-
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(config.getSecretKey());
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         Map<String, Object> body = Map.of(
                 "token", dto.getGatewayTransactionId(),
-                "amount", dto.getSessionId() // amount in paisa; adapt if needed
+                "amount", Integer.parseInt(dto.getSessionId()) // adapt if necessary
         );
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-
         Map<String, Object> response = restTemplate.postForObject(
-                "https://khalti.com/api/v2/payment/verify/", request, Map.class);
+                "https://khalti.com/api/v2/payment/verify/",
+                request,
+                Map.class
+        );
 
         boolean success = response != null && response.containsKey("idx");
         dto.setSuccess(success);
+    }
+
+    /**
+     * Admin-triggered refund for Khalti payments
+     */
+    public boolean refundPayment(String transactionId, BigDecimal amount) throws Exception {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(config.getSecretKey());
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        Map<String, Object> body = Map.of(
+                "transaction_id", transactionId,
+                "amount", amount.multiply(BigDecimal.valueOf(100)).intValue() // amount in paisa
+        );
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+        Map<String, Object> response = restTemplate.postForObject(
+                "https://khalti.com/api/v2/payment/refund/",
+                request,
+                Map.class
+        );
+
+        // If Khalti returns a success key, mark refund as successful
+        return response != null && response.containsKey("status") && "success".equalsIgnoreCase(response.get("status").toString());
     }
 }
