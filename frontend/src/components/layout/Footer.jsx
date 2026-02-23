@@ -75,9 +75,8 @@ function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-cyan-300">&copy; 2026 TravelHub. All rights reserved.</p>
             <div className="flex items-center gap-6">
-              <a href="#" className="text-sm text-cyan-300 hover:text-lime-400 transition-colors">Privacy Policy</a>
-              <a href="#" className="text-sm text-cyan-300 hover:text-lime-400 transition-colors">Terms of Service</a>
-              <a href="#" className="text-sm text-cyan-300 hover:text-lime-400 transition-colors">Refund Policy</a>
+              <a href="#" className="text-cyan-300 hover:text-white text-sm transition-colors">Privacy Policy</a>
+              <a href="#" className="text-cyan-300 hover:text-white text-sm transition-colors">Terms of Service</a>
             </div>
           </div>
         </div>

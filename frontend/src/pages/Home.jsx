@@ -94,7 +94,7 @@ function Home() {
                 />
               </div>
               <div className="relative flex items-center">
-                <span className="absolute left-3 text-slate-400">🛫</span>
+                <span className="absolute left-3 text-slate-400"><FiSend /></span>
                 <input 
                   className="w-full pl-10 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-lg focus:ring-2 focus:ring-cyan-600 text-sm" 
                   placeholder="To where?" 
