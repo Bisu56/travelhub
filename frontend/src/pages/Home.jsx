@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { FiSearch, FiMapPin, FiStar, FiShield, FiHeadphones, FiDollarSign, FiArrowRight, FiCalendar, FiUsers, FiTruck, FiHome, FiBox } from 'react-icons/fi'
+import { FiSearch, FiMapPin, FiStar, FiShield, FiHeadphones, FiDollarSign, FiArrowRight, FiCalendar, FiUsers, FiSend, FiHome, FiBox, FiTruck } from 'react-icons/fi'
 
 const popularDestinations = [
   { id: 1, name: 'Kathmandu', subtitle: "Nepal's Cultural Heart", image: 'https://images.unsplash.com/photo-1564577661026-6e5a4f8f9d71?w=600&q=80', slug: 'kathmandu', tag: 'Popular' },
@@ -66,7 +66,7 @@ function Home() {
                 onClick={() => setSearchType('flights')}
                 className={`px-6 py-4 border-b-2 font-bold text-sm flex items-center gap-2 transition-all ${searchType === 'flights' ? 'border-cyan-600 text-cyan-600' : 'border-transparent text-slate-500 hover:text-cyan-600'}`}
               >
-                <FiTruck size={18} /> Flights
+                <FiSend size={18} /> Flights
               </button>
               <button 
                 onClick={() => setSearchType('hotels')}

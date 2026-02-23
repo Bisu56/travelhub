@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { FiMapPin, FiPhone, FiMail, FiFacebook, FiTwitter, FiInstagram, FiLinkedin } from 'react-icons/fi'
+import { FiMapPin, FiPhone, FiMail, FiFacebook, FiTwitter, FiInstagram, FiLinkedin, FiTruck, FiHome, FiBox, FiSend } from 'react-icons/fi'
 
 function Footer() {
   return (
@@ -35,10 +35,10 @@ function Footer() {
           <div>
             <h3 className="font-semibold text-white mb-5 text-lg">Services</h3>
             <ul className="space-y-3">
-              <li><Link to="/flights" className="text-cyan-200 hover:text-lime-400 transition-colors flex items-center gap-2 text-sm">✈ Flights</Link></li>
-              <li><Link to="/hotels" className="text-cyan-200 hover:text-lime-400 transition-colors flex items-center gap-2 text-sm">🏨 Hotels</Link></li>
-              <li><Link to="/packages" className="text-cyan-200 hover:text-lime-400 transition-colors flex items-center gap-2 text-sm">📦 Travel Packages</Link></li>
-              <li><Link to="/vehicles" className="text-cyan-200 hover:text-lime-400 transition-colors flex items-center gap-2 text-sm">🚗 Vehicle Rentals</Link></li>
+              <li><Link to="/flights" className="text-cyan-200 hover:text-lime-400 transition-colors flex items-center gap-2 text-sm"><FiSend size={16} /> Flights</Link></li>
+              <li><Link to="/hotels" className="text-cyan-200 hover:text-lime-400 transition-colors flex items-center gap-2 text-sm"><FiHome size={16} /> Hotels</Link></li>
+              <li><Link to="/packages" className="text-cyan-200 hover:text-lime-400 transition-colors flex items-center gap-2 text-sm"><FiBox size={16} /> Travel Packages</Link></li>
+              <li><Link to="/vehicles" className="text-cyan-200 hover:text-lime-400 transition-colors flex items-center gap-2 text-sm"><FiTruck size={16} /> Vehicle Rentals</Link></li>
             </ul>
           </div>
 

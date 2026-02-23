@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { FiMenu, FiX, FiUser, FiLogOut, FiChevronDown, FiHome, FiBox, FiMap, FiTruck } from 'react-icons/fi'
+import { FiMenu, FiX, FiUser, FiLogOut, FiChevronDown, FiHome, FiBox, FiSend, FiTruck } from 'react-icons/fi'
 import NotificationBell from '../../features/notifications/components/NotificationBell'
 
 const navLinks = [
-  { to: '/flights', label: 'Flights', icon: <FiTruck size={18} /> },
+  { to: '/flights', label: 'Flights', icon: <FiSend size={18} /> },
   { to: '/hotels', label: 'Hotels', icon: <FiHome size={18} /> },
   { to: '/packages', label: 'Packages', icon: <FiBox size={18} /> },
-  { to: '/vehicles', label: 'Vehicle Rental', icon: <FiMap size={18} /> },
+  { to: '/vehicles', label: 'Vehicle Rental', icon: <FiTruck size={18} /> },
 ]
 
 function Header() {
