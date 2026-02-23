@@ -2,7 +2,7 @@ package com.travelhub.controller;
 
 import com.travelhub.Dtos.PaymentInitiateResponseDTO;
 import com.travelhub.entity.User;
-import com.travelhub.service.PaymentService;
+import com.travelhub.payment.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;

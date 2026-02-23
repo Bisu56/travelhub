@@ -1,8 +1,6 @@
-package com.travelhub.service;
+package com.travelhub.payment;
 
 import com.travelhub.entity.Payment;
-import com.travelhub.payment.PaymentGateway;
-import com.travelhub.payment.PaymentGatewayResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

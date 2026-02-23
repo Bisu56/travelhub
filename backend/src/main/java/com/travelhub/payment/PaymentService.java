@@ -1,4 +1,4 @@
-package com.travelhub.service;
+package com.travelhub.payment;
 
 import com.travelhub.Dtos.PaymentInitiateResponseDTO;
 import com.travelhub.entity.Cart;
@@ -6,9 +6,9 @@ import com.travelhub.entity.Payment;
 import com.travelhub.entity.User;
 import com.travelhub.entity.enums.CartStatus;
 import com.travelhub.entity.enums.PaymentStatus;
-import com.travelhub.payment.PaymentGateway;
 import com.travelhub.repository.CartRepository;
 import com.travelhub.repository.PaymentRepository;
+import com.travelhub.service.CartService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

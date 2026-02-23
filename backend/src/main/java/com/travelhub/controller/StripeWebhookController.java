@@ -2,7 +2,7 @@ package com.travelhub.controller;
 
 import com.stripe.model.billingportal.Session;
 import com.stripe.net.Webhook;
-import com.travelhub.service.PaymentService;
+import com.travelhub.payment.PaymentService;
 import jdk.jfr.Event;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

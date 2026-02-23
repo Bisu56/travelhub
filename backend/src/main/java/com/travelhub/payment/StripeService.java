@@ -1,10 +1,13 @@
-package com.travelhub.service;
+package com.travelhub.payment;
+import com.stripe.model.Refund;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class StripeService {
@@ -46,5 +49,12 @@ public class StripeService {
                         .build();
 
         return Session.create(params);
+    }
+    public Refund createRefund(String paymentIntentId) throws Exception {
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("payment_intent", paymentIntentId);
+
+        return Refund.create(params);
     }
 }

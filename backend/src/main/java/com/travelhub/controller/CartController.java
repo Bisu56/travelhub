@@ -2,7 +2,6 @@ package com.travelhub.controller;
 
 import com.travelhub.Dtos.AddToCartRequest;
 import com.travelhub.Dtos.CartResponseDTO;
-import com.travelhub.Dtos.CheckoutResponseDTO;
 import com.travelhub.entity.User;
 import com.travelhub.service.CartService;
 import com.travelhub.service.UserService;
@@ -48,7 +47,7 @@ public class CartController {
     }
 
     @PostMapping("/checkout")
-    public ResponseEntity<CheckoutResponseDTO> checkout(Authentication auth) {
+    public ResponseEntity<CartResponseDTO> checkout(Authentication auth) {
         User user = userService.getCurrentUser(auth);
         return ResponseEntity.ok(cartService.checkout(user));
     }
