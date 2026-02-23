@@ -25,7 +25,6 @@ public class StripePaymentGateway implements PaymentGateway {
                 payment.getCurrency(),
                 payment.getId().toString()
         );
-
         return PaymentGatewayResponse.builder()
                 .paymentUrl(session.getUrl())
                 .sessionId(session.getId())
