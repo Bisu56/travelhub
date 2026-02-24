@@ -756,6 +756,13 @@ export default function FlightSearchPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
 
+  const activeFilterCount = [
+    priceRange < 2500,
+    selectedAirlines.length > 0,
+    selectedStops !== 'any',
+    selectedTime !== 'Any'
+  ].filter(Boolean).length;
+
   const filteredFlights = useMemo(() => {
     let flights = MOCK_FLIGHTS.filter(flight => {
       const matchesPrice = flight.price <= priceRange;
