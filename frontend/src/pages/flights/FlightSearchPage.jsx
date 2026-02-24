@@ -391,12 +391,13 @@ const FilterSidebar = ({
         onClick={onClose}
       />
       <aside className={`
-        fixed md:relative inset-y-0 left-0 z-50 w-80 md:w-64 bg-white md:bg-transparent transform transition-transform duration-300 overflow-y-auto
+        fixed md:relative inset-y-0 left-0 z-50 w-[85%] sm:w-80 md:w-64 bg-white md:bg-transparent shadow-2xl md:shadow-none transform transition-transform duration-300 ease-in-out flex flex-col
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
-        <div className="p-6 md:p-0">
-          <div className="flex items-center justify-between mb-6">
+        <div className="p-6 md:p-0 flex flex-col h-full">
+          <div className="flex items-center justify-between mb-6 md:hidden border-b pb-4 -mx-6 px-6">
             <div className="flex items-center gap-2">
+              <Filter className="text-cyan-600" size={20} />
               <h2 className="text-lg font-bold">Filters</h2>
               {activeFilterCount > 0 && (
                 <span className="bg-cyan-600 text-white text-xs px-2 py-0.5 rounded-full">
@@ -404,113 +405,133 @@ const FilterSidebar = ({
                 </span>
               )}
             </div>
-            <button onClick={onClose} className="md:hidden p-2 hover:bg-slate-100 rounded-lg">
+            <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
               <X size={20} />
             </button>
           </div>
 
-          <button 
-            onClick={resetFilters} 
-            className="text-cyan-600 text-sm font-medium hover:underline mb-6"
-          >
-            Reset all filters
-          </button>
-
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-4">
-              <h3 className="font-semibold text-sm flex items-center gap-2">
-                <span className="w-2 h-2 bg-cyan-600 rounded-full" />
-                Price Range
-              </h3>
-              <input 
-                type="range" 
-                min="300" 
-                max="2500" 
-                step="50"
-                value={priceRange}
-                onChange={(e) => setPriceRange(parseInt(e.target.value))}
-                className="w-full accent-cyan-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-              />
-              <div className="flex justify-between text-xs text-slate-400 font-medium">
-                <span>$300</span>
-                <span>$2,500+</span>
+          <div className="flex-1 overflow-y-auto pr-1">
+            <div className="flex items-center justify-between mb-6 hidden md:flex">
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-bold">Filters</h2>
+                {activeFilterCount > 0 && (
+                  <span className="bg-cyan-600 text-white text-xs px-2 py-0.5 rounded-full">
+                    {activeFilterCount}
+                  </span>
+                )}
               </div>
-              <div className="text-center font-bold text-cyan-600 bg-cyan-50 py-2 rounded-lg">
-                Up to ${priceRange}
-              </div>
+              <button 
+                onClick={resetFilters} 
+                className="text-cyan-600 text-xs font-bold hover:underline"
+              >
+                Reset
+              </button>
             </div>
 
-            <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-4">
-              <h3 className="font-semibold text-sm flex items-center gap-2">
-                <span className="w-2 h-2 bg-cyan-600 rounded-full" />
-                Airlines
-              </h3>
-              <div className="space-y-3">
-                {airlines.map((airline) => (
-                  <label key={airline} className="flex items-center gap-3 cursor-pointer group">
-                    <div 
-                      onClick={() => toggleAirline(airline)}
-                      className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${
-                        selectedAirlines.includes(airline) 
-                          ? 'bg-cyan-600 border-cyan-600 text-white' 
-                          : 'border-slate-300 group-hover:border-cyan-600'
+            <button 
+              onClick={resetFilters} 
+              className="text-cyan-600 text-sm font-medium hover:underline mb-6 md:hidden"
+            >
+              Reset all filters
+            </button>
+
+            <div className="space-y-6 pb-6">
+              <div className="bg-white md:bg-white/50 rounded-2xl border border-slate-200 p-4 space-y-4">
+                <h3 className="font-bold text-sm text-slate-800 flex items-center justify-between">
+                  Price Range
+                  <span className="text-cyan-600 text-xs font-bold">Up to ${priceRange}</span>
+                </h3>
+                <input 
+                  type="range" 
+                  min="300" 
+                  max="2500" 
+                  step="50"
+                  value={priceRange}
+                  onChange={(e) => setPriceRange(parseInt(e.target.value))}
+                  className="w-full accent-cyan-600 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                />
+                <div className="flex justify-between text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                  <span>$300</span>
+                  <span>$2,500+</span>
+                </div>
+              </div>
+
+              <div className="bg-white md:bg-white/50 rounded-2xl border border-slate-200 p-4 space-y-4">
+                <h3 className="font-bold text-sm text-slate-800">Airlines</h3>
+                <div className="space-y-2">
+                  {airlines.map((airline) => (
+                    <label key={airline} className="flex items-center gap-3 cursor-pointer group">
+                      <div 
+                        onClick={() => toggleAirline(airline)}
+                        className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${
+                          selectedAirlines.includes(airline) 
+                            ? 'bg-cyan-600 border-cyan-600 text-white' 
+                            : 'border-slate-200 group-hover:border-cyan-400'
+                        }`}
+                      >
+                        {selectedAirlines.includes(airline) && <Check size={14} strokeWidth={3} />}
+                      </div>
+                      <span className={`text-sm font-medium transition-colors ${
+                        selectedAirlines.includes(airline) ? 'text-slate-900' : 'text-slate-500'
+                      }`}>
+                        {airline}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white md:bg-white/50 rounded-2xl border border-slate-200 p-4 space-y-4">
+                <h3 className="font-bold text-sm text-slate-800">Stops</h3>
+                <div className="flex flex-wrap gap-2">
+                  {stops.map((stop) => (
+                    <button 
+                      key={stop.value}
+                      onClick={() => setSelectedStops(stop.value)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${
+                        selectedStops === stop.value 
+                          ? 'bg-cyan-600 border-cyan-600 text-white shadow-md' 
+                          : 'bg-white border-slate-100 text-slate-500 hover:border-slate-300'
                       }`}
                     >
-                      {selectedAirlines.includes(airline) && <Check size={14} />}
-                    </div>
-                    <span className="text-sm font-medium text-slate-600">{airline}</span>
-                  </label>
-                ))}
+                      {stop.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-4">
-              <h3 className="font-semibold text-sm flex items-center gap-2">
-                <span className="w-2 h-2 bg-cyan-600 rounded-full" />
-                Stops
-              </h3>
-              <div className="space-y-3">
-                {stops.map((stop) => (
-                  <label key={stop.value} className="flex items-center gap-3 cursor-pointer group">
-                    <div 
-                      onClick={() => setSelectedStops(stop.value)}
-                      className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
-                        selectedStops === stop.value 
-                          ? 'border-cyan-600 border-4' 
-                          : 'border-slate-300 group-hover:border-cyan-600'
+              <div className="bg-white md:bg-white/50 rounded-2xl border border-slate-200 p-4 space-y-4">
+                <h3 className="font-bold text-sm text-slate-800">Departure</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {times.map((time) => (
+                    <button
+                      key={time.label}
+                      onClick={() => setSelectedTime(time.label)}
+                      className={`p-2 rounded-xl border-2 text-left transition-all ${
+                        selectedTime === time.label 
+                          ? 'border-cyan-600 bg-cyan-50/50' 
+                          : 'border-slate-100 hover:border-cyan-200'
                       }`}
-                    />
-                    <span className="text-sm font-medium text-slate-600">{stop.label}</span>
-                  </label>
-                ))}
+                    >
+                      <div className={`mb-1 ${selectedTime === time.label ? 'text-cyan-600' : 'text-slate-400'}`}>
+                        {time.icon}
+                      </div>
+                      <div className="text-[10px] font-bold uppercase text-slate-400 leading-tight truncate">{time.label}</div>
+                      <div className="text-[11px] font-bold text-slate-700">{time.range}</div>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
+          </div>
 
-            <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-4">
-              <h3 className="font-semibold text-sm flex items-center gap-2">
-                <span className="w-2 h-2 bg-cyan-600 rounded-full" />
-                Departure Time
-              </h3>
-              <div className="grid grid-cols-2 gap-2">
-                {times.map((time) => (
-                  <button
-                    key={time.label}
-                    onClick={() => setSelectedTime(time.label)}
-                    className={`p-3 rounded-xl border text-left transition-all ${
-                      selectedTime === time.label 
-                        ? 'border-cyan-600 bg-cyan-50 ring-1 ring-cyan-600' 
-                        : 'border-slate-200 hover:border-cyan-600/50'
-                    }`}
-                  >
-                    <div className={`mb-1 ${selectedTime === time.label ? 'text-cyan-600' : 'text-slate-400'}`}>
-                      {time.icon}
-                    </div>
-                    <div className="text-[10px] font-bold uppercase text-slate-400 leading-tight">{time.label}</div>
-                    <div className="text-[11px] font-semibold text-slate-600">{time.range}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
+          <div className="p-4 border-t md:hidden">
+            <button 
+              onClick={onClose}
+              className="w-full bg-cyan-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-cyan-600/20 active:scale-[0.98] transition-transform"
+            >
+              Show Results
+            </button>
           </div>
         </div>
       </aside>
