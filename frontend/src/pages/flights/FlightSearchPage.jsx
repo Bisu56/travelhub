@@ -225,6 +225,7 @@ const SearchSection = ({ onSearch }) => {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
+                    onClick={(e) => e.stopPropagation()}
                     className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-200 p-4 z-50"
                   >
                     <div className="space-y-4">
