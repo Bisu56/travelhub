@@ -26,9 +26,7 @@
 
     <dependencies>
 
-        <!-- ========================= -->
-        <!-- Spring Core Dependencies -->
-        <!-- ========================= -->
+
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -50,15 +48,11 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- Monitoring -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
-        <!-- ========================= -->
-        <!-- Database -->
-        <!-- ========================= -->
 
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -72,9 +66,6 @@
             <artifactId>flyway-core</artifactId>
         </dependency>
 
-        <!-- ========================= -->
-        <!-- JWT Authentication -->
-        <!-- ========================= -->
 
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -96,9 +87,7 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- ========================= -->
-        <!-- Payments -->
-        <!-- ========================= -->
+
 
         <!-- Stripe -->
         <dependency>
@@ -127,16 +116,19 @@
             <artifactId>twilio</artifactId>
             <version>9.14.0</version>
             <exclusions>
+
                 <exclusion>
                     <groupId>commons-logging</groupId>
                     <artifactId>commons-logging</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+        <groupId>com.sendinblue</groupId>
+        <artifactId>sib-api-v3-sdk</artifactId>
+        <version>7.0.0</version> <!-- older stable version -->
+    </dependency>
 
-        <!-- ========================= -->
-        <!-- Rate Limiting -->
-        <!-- ========================= -->
 
         <dependency>
             <groupId>com.bucket4j</groupId>
@@ -144,9 +136,6 @@
             <version>8.15.0</version>
         </dependency>
 
-        <!-- ========================= -->
-        <!-- API Documentation -->
-        <!-- ========================= -->
 
         <dependency>
             <groupId>org.springdoc</groupId>
@@ -154,9 +143,6 @@
             <version>2.3.0</version>
         </dependency>
 
-        <!-- ========================= -->
-        <!-- Development -->
-        <!-- ========================= -->
 
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -177,9 +163,6 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- ========================= -->
-        <!-- Testing -->
-        <!-- ========================= -->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
