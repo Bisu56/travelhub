@@ -792,7 +792,7 @@ export default function FlightSearchPage() {
     setSelectedTime('Any');
   };
 
-  const handleSearch = (searchParams) => {
+  const handleSearch = () => {
     setIsSearching(true);
     setTimeout(() => setIsSearching(false), 1500);
   };
