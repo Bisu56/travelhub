@@ -353,7 +353,8 @@ const FilterSidebar = ({
   setSelectedTime,
   resetFilters,
   isOpen,
-  onClose
+  onClose,
+  activeFilterCount
 }) => {
   const airlines = ['Nepal Airlines', 'flydubai', 'Emirates', 'Air Arabia'];
   const stops = [
@@ -376,13 +377,6 @@ const FilterSidebar = ({
       setSelectedAirlines([...selectedAirlines, airline]);
     }
   };
-
-  const activeFilterCount = [
-    priceRange < 2500,
-    selectedAirlines.length > 0,
-    selectedStops !== 'any',
-    selectedTime !== 'Any'
-  ].filter(Boolean).length;
 
   return (
     <>
@@ -825,6 +819,7 @@ export default function FlightSearchPage() {
             resetFilters={resetFilters}
             isOpen={showFilters}
             onClose={() => setShowFilters(false)}
+            activeFilterCount={activeFilterCount}
           />
 
           <div className="flex-1 space-y-6">
