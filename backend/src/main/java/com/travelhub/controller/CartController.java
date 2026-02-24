@@ -42,12 +42,14 @@ public class CartController {
 
     @GetMapping
     public ResponseEntity<CartResponseDTO> view(Authentication auth) {
+
         User user = userService.getCurrentUser(auth);
         return ResponseEntity.ok(cartService.viewCart(user));
     }
 
     @PostMapping("/checkout")
     public ResponseEntity<CartResponseDTO> checkout(Authentication auth) {
+
         User user = userService.getCurrentUser(auth);
         return ResponseEntity.ok(cartService.checkout(user));
     }

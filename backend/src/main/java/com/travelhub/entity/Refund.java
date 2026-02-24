@@ -18,6 +18,9 @@ public class Refund {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    private Long version;
+
     @ManyToOne
     private Payment payment;
 
@@ -30,5 +33,9 @@ public class Refund {
     @Enumerated(EnumType.STRING)
     private RefundStatus status;
 
+    @ManyToOne
+    private User requestedBy;
     private LocalDateTime createdAt;
+
+    private LocalDateTime refundedAt;
 }
