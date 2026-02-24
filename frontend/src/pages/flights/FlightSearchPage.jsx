@@ -539,44 +539,62 @@ const FlightCard = ({ flight, onSelect }) => {
       className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all group"
     >
       <div 
-        className="p-6 flex flex-col md:flex-row items-center gap-6 cursor-pointer"
+        className="p-4 sm:p-6 flex flex-col md:flex-row md:items-center gap-4 md:gap-6 cursor-pointer"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <div className="flex flex-col items-center gap-2 w-28">
-          <div className="w-14 h-14 rounded-xl border border-slate-100 flex items-center justify-center p-2 bg-white">
-            <img src={flight.airlineLogo} alt={flight.airline} className="max-w-full max-h-full object-contain" />
-          </div>
-          <span className="text-xs font-bold text-slate-800 text-center">{flight.airline}</span>
-          <span className="text-[10px] text-slate-400">{flight.class}</span>
-        </div>
-
-        <div className="flex-1 flex items-center justify-between w-full">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-slate-800">{flight.departureTime}</div>
-            <div className="text-xs font-medium text-slate-400">{flight.from}</div>
-          </div>
-
-          <div className="flex-1 px-6 flex flex-col items-center">
-            <div className="text-xs font-medium text-slate-400 mb-1">{flight.duration}</div>
-            <div className="w-full h-0.5 bg-slate-200 relative flex items-center justify-center">
-              <div className="absolute w-2 h-2 rounded-full bg-slate-200 -left-1" />
-              <div className="absolute w-2 h-2 rounded-full bg-slate-200 -right-1" />
-              <Plane size={14} className="text-cyan-600 bg-white px-1 z-10" />
+        {/* Mobile Header: Logo and Price */}
+        <div className="flex md:flex-col items-center justify-between md:justify-center gap-3 md:w-28 border-b md:border-b-0 pb-3 md:pb-0 border-slate-100">
+          <div className="flex items-center md:flex-col gap-3 md:gap-2">
+            <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl border border-slate-100 flex items-center justify-center p-1.5 md:p-2 bg-white">
+              <img src={flight.airlineLogo} alt={flight.airline} className="max-w-full max-h-full object-contain" />
             </div>
-            <div className={`mt-1 text-[10px] font-bold uppercase tracking-wider ${
-              flight.stops === 'DIRECT' ? 'text-emerald-600' : 'text-amber-600'
-            }`}>
-              {flight.stops}
+            <div>
+              <div className="text-xs md:text-sm font-bold text-slate-800">{flight.airline}</div>
+              <div className="text-[10px] text-slate-400">{flight.class}</div>
             </div>
           </div>
-
-          <div className="text-center">
-            <div className="text-2xl font-bold text-slate-800">{flight.arrivalTime}</div>
-            <div className="text-xs font-medium text-slate-400">{flight.to}</div>
+          
+          <div className="md:hidden flex flex-col items-end">
+            <div className="text-2xl font-bold text-slate-900">${flight.price}</div>
+            {flight.originalPrice && (
+              <span className="text-[10px] text-red-600 font-bold bg-red-50 px-1.5 rounded">
+                {Math.round((1 - flight.price / flight.originalPrice) * 100)}% OFF
+              </span>
+            )}
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-1 min-w-[120px]">
+        {/* Flight Times and Path */}
+        <div className="flex-1 flex items-center justify-between gap-4 py-2">
+          <div className="flex-1 flex items-center justify-between max-w-sm mx-auto md:max-w-none w-full">
+            <div className="text-center md:text-left">
+              <div className="text-xl md:text-2xl font-bold text-slate-800">{flight.departureTime}</div>
+              <div className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-tight">{flight.from}</div>
+            </div>
+
+            <div className="flex-1 px-4 md:px-8 flex flex-col items-center min-w-[80px]">
+              <div className="text-[10px] font-medium text-slate-400 mb-1">{flight.duration}</div>
+              <div className="w-full h-px bg-slate-200 relative flex items-center justify-center">
+                <div className="absolute w-1.5 h-1.5 rounded-full bg-slate-300 -left-0.5" />
+                <div className="absolute w-1.5 h-1.5 rounded-full bg-slate-300 -right-0.5" />
+                <Plane size={12} className="text-cyan-600 bg-white px-0.5 z-10" />
+              </div>
+              <div className={`mt-1 text-[9px] md:text-[10px] font-bold uppercase tracking-wider ${
+                flight.stops === 'DIRECT' ? 'text-emerald-600' : 'text-amber-600'
+              }`}>
+                {flight.stops}
+              </div>
+            </div>
+
+            <div className="text-center md:text-right">
+              <div className="text-xl md:text-2xl font-bold text-slate-800">{flight.arrivalTime}</div>
+              <div className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-tight">{flight.to}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop Price Section */}
+        <div className="hidden md:flex flex-col items-end gap-1 min-w-[120px] border-l border-slate-100 pl-6">
           {flight.originalPrice && (
             <div className="flex items-center gap-2">
               <span className="text-xs text-slate-400 line-through">${flight.originalPrice}</span>
