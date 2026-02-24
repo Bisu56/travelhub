@@ -22,7 +22,6 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final OtpService otpService;
 
-    // ------------------- Basic CRUD -------------------
 
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);

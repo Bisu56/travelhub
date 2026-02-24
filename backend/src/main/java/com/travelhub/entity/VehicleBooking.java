@@ -5,6 +5,7 @@ import com.travelhub.entity.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import java.time.Instant;
 
 @Entity
 @Table(name = "vehicle_bookings")
@@ -45,4 +46,13 @@ public class VehicleBooking {
     private PaymentStatus paymentStatus;
 
     private String rejectionReason;
+
+    @Column(nullable = false)
+    private Instant createdAt;
+
+    @PrePersist
+    void onCreate() {
+        createdAt = Instant.now();
+    }
+
 }

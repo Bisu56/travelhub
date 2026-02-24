@@ -5,6 +5,8 @@ import com.travelhub.entity.User;
 import com.travelhub.entity.VehicleOffering;
 import com.travelhub.entity.enums.BookingStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -16,5 +18,4 @@ public interface VehicleBookingRepository extends JpaRepository<VehicleBooking, 
 
     List<VehicleBooking> findByVehicle_CreatedBy(User agent);
 
-    List<VehicleBooking> findByBookingStatus(BookingStatus status);
 }
