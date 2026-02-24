@@ -16,5 +16,7 @@ public interface DestinationBookingRepository extends JpaRepository<DestinationB
                 Long packageId,
                 BookingStatus status
         );
-    }
+
+}
+
 
