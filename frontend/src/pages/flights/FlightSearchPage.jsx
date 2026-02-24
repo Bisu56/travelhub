@@ -106,7 +106,6 @@ const SearchSection = ({ onSearch }) => {
   const [from, setFrom] = useState('Kathmandu (KTM)');
   const [to, setTo] = useState('Dubai (DXB)');
   const [departureDate, setDepartureDate] = useState('2024-10-24');
-  const [returnDate, setReturnDate] = useState('2024-10-31');
   const [passengers, setPassengers] = useState({ adults: 1, children: 0, infants: 0 });
   const [travelClass, setTravelClass] = useState('Economy');
   const [showPassengerDropdown, setShowPassengerDropdown] = useState(false);
@@ -121,7 +120,7 @@ const SearchSection = ({ onSearch }) => {
   const handleSearch = () => {
     setIsSearching(true);
     setTimeout(() => setIsSearching(false), 1000);
-    onSearch?.({ from, to, departureDate, returnDate, passengers, travelClass });
+    onSearch?.({ from, to, departureDate, passengers, travelClass });
   };
 
   const totalPassengers = passengers.adults + passengers.children + passengers.infants;
