@@ -723,23 +723,26 @@ const ActiveFilters = ({
   if (filters.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-2 mb-4">
-      {filters.map((filter, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex items-center gap-2 bg-cyan-50 border border-cyan-200 rounded-full px-3 py-1.5"
-        >
-          <span className="text-sm font-medium text-cyan-700">{filter.label}</span>
-          <button 
-            onClick={filter.onRemove}
-            className="text-cyan-400 hover:text-cyan-700 transition-colors"
+    <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div className="flex-shrink-0 text-xs font-bold text-slate-400 uppercase tracking-wider mr-2 hidden sm:block">Active:</div>
+      <div className="flex flex-nowrap gap-2">
+        {filters.map((filter, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex items-center gap-2 bg-cyan-50 border border-cyan-100 rounded-full px-3 py-1.5 whitespace-nowrap"
           >
-            <X size={14} />
-          </button>
-        </motion.div>
-      ))}
+            <span className="text-xs font-bold text-cyan-700">{filter.label}</span>
+            <button 
+              onClick={filter.onRemove}
+              className="text-cyan-400 hover:text-cyan-700 transition-colors"
+            >
+              <X size={12} strokeWidth={3} />
+            </button>
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 };
