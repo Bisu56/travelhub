@@ -6,6 +6,8 @@ const pageTitles = {
   '/admin': 'Dashboard',
   '/admin/dashboard': 'Dashboard',
   '/admin/agents': 'Agent Approvals',
+  '/admin/agents/manage': 'Agent Management',
+  '/admin/users': 'User Management',
   '/admin/destinations': 'Destinations',
   '/admin/reviews': 'Reviews',
   '/admin/commissions': 'Commissions',
