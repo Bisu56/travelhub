@@ -89,7 +89,7 @@ function AppRoutes() {
           {/* ── ADMIN ROUTES ── */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="dashboard" element={<AdminDashboard />} /> />} />
             <Route path="agents" element={<AgentApproval />} />
             <Route path="agents/manage" element={<AgentManagement />} />
             <Route path="users" element={<UserManagement />} />

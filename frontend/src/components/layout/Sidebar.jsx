@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { 
-  FiGrid, FiUsers, FiMap, FiLogOut, FiMenu, FiBell, FiChevronRight 
+  FiGrid, FiUsers, FiUser, FiMap, FiLogOut, FiMenu, FiBell, FiChevronRight 
 } from 'react-icons/fi'
 
 const Sidebar = () => {
@@ -10,6 +10,8 @@ const Sidebar = () => {
   const navItems = [
     { path: '/admin/dashboard', icon: <FiGrid size={20} />, label: 'Dashboard' },
     { path: '/admin/agents', icon: <FiUsers size={20} />, label: 'Agent Approvals' },
+    { path: '/admin/agents/manage', icon: <FiUsers size={20} />, label: 'All Agents' },
+    { path: '/admin/users', icon: <FiUser size={20} />, label: 'Users' },
     { path: '/admin/destinations', icon: <FiMap size={20} />, label: 'Destinations' },
   ]
 
