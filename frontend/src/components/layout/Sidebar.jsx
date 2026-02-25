@@ -1,25 +1,145 @@
+import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { 
-  FiGrid, FiUsers, FiUser, FiMap, FiLogOut, FiMenu, FiBell, FiChevronRight 
+  FiGrid, FiUsers, FiUser, FiMap, FiLogOut, FiChevronRight, 
+  FiStar, FiDollarSign, FiCreditCard, FiMail, FiChevronDown
 } from 'react-icons/fi'
+
+const NavItem = ({ item, isOpen, toggleSubmenu, badge }) => {
+  const hasSubmenu = item.submenu?.length > 0
+  const isActive = item.submenu 
+    ? item.submenu.some(sub => window.location.pathname === sub.path)
+    : false
+
+  return (
+    <div>
+      {hasSubmenu ? (
+        <button
+          onClick={() => toggleSubmenu(item.label)}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium text-sm
+            ${isActive || isOpen
+              ? 'bg-white/10 text-white' 
+              : 'text-blue-100 hover:bg-white/10 hover:text-white'
+            }`}
+        >
+          {item.icon}
+          <span className="flex-1 text-left">{item.label}</span>
+          {badge && (
+            <span className="px-2 py-0.5 text-xs font-semibold bg-amber-500 text-white rounded-full">
+              {badge}
+            </span>
+          )}
+          <FiChevronDown className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} size={16} />
+        </button>
+      ) : (
+        <NavLink
+          to={item.path}
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium text-sm
+            ${isActive 
+              ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30' 
+              : 'text-blue-100 hover:bg-white/10 hover:text-white'
+            }`
+          }
+        >
+          {item.icon}
+          <span className="flex-1">{item.label}</span>
+          {badge && (
+            <span className="px-2 py-0.5 text-xs font-semibold bg-amber-500 text-white rounded-full">
+              {badge}
+            </span>
+          )}
+        </NavLink>
+      )}
+      
+      {hasSubmenu && isOpen && (
+        <div className="ml-4 mt-1 space-y-1 border-l border-white/10 pl-4">
+          {item.submenu.map(sub => (
+            <NavLink
+              key={sub.path}
+              to={sub.path}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium
+                ${isActive 
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30' 
+                  : 'text-blue-200 hover:bg-white/10 hover:text-white'
+                }`
+              }
+            >
+              {sub.icon}
+              <span>{sub.label}</span>
+              {sub.badge && (
+                <span className="ml-auto px-2 py-0.5 text-xs font-semibold bg-amber-500 text-white rounded-full">
+                  {sub.badge}
+                </span>
+              )}
+            </NavLink>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const Sidebar = () => {
   const { user, logout } = useAuth()
+  const [openMenus, setOpenMenus] = useState(['Agents'])
+
+  const toggleSubmenu = (label) => {
+    setOpenMenus(prev => 
+      prev.includes(label) 
+        ? prev.filter(item => item !== label)
+        : [...prev, label]
+    )
+  }
 
   const navItems = [
-    { path: '/admin/dashboard', icon: <FiGrid size={20} />, label: 'Dashboard' },
-    { path: '/admin/agents', icon: <FiUsers size={20} />, label: 'Agent Approvals' },
-    { path: '/admin/agents/manage', icon: <FiUsers size={20} />, label: 'All Agents' },
-    { path: '/admin/users', icon: <FiUser size={20} />, label: 'Users' },
-    { path: '/admin/destinations', icon: <FiMap size={20} />, label: 'Destinations' },
+    { 
+      label: 'Dashboard', 
+      icon: <FiGrid size={20} />, 
+      path: '/admin/dashboard' 
+    },
+    { 
+      label: 'Agents', 
+      icon: <FiUsers size={20} />, 
+      badge: 5,
+      submenu: [
+        { label: 'Approvals', icon: <FiUsers size={16} />, path: '/admin/agents', badge: 5 },
+        { label: 'All Agents', icon: <FiUsers size={16} />, path: '/admin/agents/manage' },
+      ]
+    },
+    { 
+      label: 'Users', 
+      icon: <FiUser size={20} />, 
+      path: '/admin/users' 
+    },
+    { 
+      label: 'Destinations', 
+      icon: <FiMap size={20} />, 
+      path: '/admin/destinations' 
+    },
+    { 
+      label: 'Reviews', 
+      icon: <FiStar size={20} />, 
+      path: '/admin/reviews' 
+    },
+    { 
+      label: 'Commissions', 
+      icon: <FiDollarSign size={20} />, 
+      path: '/admin/commissions' 
+    },
+    { 
+      label: 'Payouts', 
+      icon: <FiCreditCard size={20} />, 
+      path: '/admin/payouts' 
+    },
+    { 
+      label: 'Email Templates', 
+      icon: <FiMail size={20} />, 
+      path: '/admin/email-preview' 
+    },
   ]
-
-  const linkClass = ({ isActive }) =>
-    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium text-sm
-     ${isActive 
-       ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30' 
-       : 'text-blue-100 hover:bg-white/10 hover:text-white'}`
 
   return (
     <div className="w-72 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col min-h-screen relative overflow-hidden">
@@ -39,7 +159,7 @@ const Sidebar = () => {
         </div>
       </div>
 
-      <nav className="p-4 flex-1 relative z-10">
+      <nav className="p-4 flex-1 relative z-10 overflow-y-auto">
         <div className="mb-2">
           <p className="px-4 text-xs font-semibold text-blue-400 uppercase tracking-wider mb-3">
             Main Menu
@@ -48,11 +168,13 @@ const Sidebar = () => {
         {user?.role === 'ADMIN' && (
           <div className="space-y-1">
             {navItems.map(item => (
-              <NavLink key={item.path} to={item.path} className={linkClass}>
-                {item.icon}
-                <span>{item.label}</span>
-                <FiChevronRight className="ml-auto opacity-0 group-hover:opacity-100" />
-              </NavLink>
+              <NavItem 
+                key={item.label} 
+                item={item} 
+                isOpen={openMenus.includes(item.label)}
+                toggleSubmenu={toggleSubmenu}
+                badge={item.badge}
+              />
             ))}
           </div>
         )}
