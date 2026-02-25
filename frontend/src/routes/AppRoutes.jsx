@@ -26,6 +26,8 @@ import PaymentHistoryPage from "../pages/payments/PaymentHistoryPage";
 // Admin layout & pages
 import AdminLayout from '../components/layout/AdminLayout';
 import AgentApproval from '../pages/admin/AgentApproval';
+import AgentManagement from '../pages/admin/AgentManagement';
+import UserManagement from '../pages/admin/UserManagement';
 import Destination from '../pages/admin/Destination';
 
 // Agent layout & pages
