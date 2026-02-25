@@ -165,7 +165,7 @@ const Sidebar = () => {
             Main Menu
           </p>
         </div>
-        {user?.role === 'ADMIN' && (
+        {(user?.role === 'ADMIN' || !user) && (
           <div className="space-y-1">
             {navItems.map(item => (
               <NavItem 

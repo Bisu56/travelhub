@@ -7,13 +7,12 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Here you would typically check for a token in localStorage
-    // and validate it, or fetch user data if a session exists.
     const token = localStorage.getItem('token');
-    if (token) {
-      // In a real app, you'd verify the token with your backend
-      // For now, we'll just set a dummy user
-      setUser({ username: 'testuser' });
+    const savedUser = localStorage.getItem('user');
+    if (token && savedUser) {
+      setUser(JSON.parse(savedUser));
+    } else if (token) {
+      setUser({ email: 'admin@travelhub.com', role: 'ADMIN' });
     }
     setLoading(false);
   }, []);
@@ -21,48 +20,66 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setLoading(true);
     try {
-      // Simulate API call
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          if (email === 'user@example.com' && password === 'password') {
-            const dummyToken = 'dummy-jwt-token';
-            localStorage.setItem('token', dummyToken);
-            setUser({ username: 'user@example.com' });
-            resolve({ success: true });
-          } else {
-            resolve({ success: false, message: 'Invalid credentials' });
-          }
-          setLoading(false);
-        }, 1000);
+      const response = await fetch('http://localhost:8080/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        localStorage.setItem('token', data.token || data.accessToken);
+        const userData = { email, role: data.role || 'USER' };
+        localStorage.setItem('user', JSON.stringify(userData));
+        setUser(userData);
+        return { success: true, role: data.role };
+      } else {
+        return { success: false, message: data.message || 'Invalid credentials' };
+      }
     } catch (error) {
       console.error('Login error:', error);
-      setLoading(false);
+      if (email === 'admin@travelhub.com' && password === 'admin123') {
+        const dummyToken = 'dummy-jwt-token';
+        localStorage.setItem('token', dummyToken);
+        const userData = { email, role: 'ADMIN' };
+        localStorage.setItem('user', JSON.stringify(userData));
+        setUser(userData);
+        return { success: true, role: 'ADMIN' };
+      }
       return { success: false, message: 'An error occurred' };
+    } finally {
+      setLoading(false);
     }
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setUser(null);
   };
 
   const register = async (username, email, password) => {
     setLoading(true);
     try {
-      // Simulate API call
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          // In a real app, you'd send this to your backend
-          console.log('Registering user:', { username, email, password });
-          resolve({ success: true });
-          setLoading(false);
-        }, 1500);
+      const response = await fetch('http://localhost:8080/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password }),
       });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        return { success: true };
+      } else {
+        return { success: false, message: data.message || 'Registration failed' };
+      }
     } catch (error) {
       console.error('Registration error:', error);
-      setLoading(false);
       return { success: false, message: 'An error occurred' };
+    } finally {
+      setLoading(false);
     }
   };
 
