@@ -91,6 +91,8 @@ function AppRoutes() {
             <Route index element={<AdminDashboard />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="agents" element={<AgentApproval />} />
+            <Route path="agents/manage" element={<AgentManagement />} />
+            <Route path="users" element={<UserManagement />} />
             <Route path="destinations" element={<Destination />} />
             <Route path="reviews" element={<AdminReviewModeration />} />
             <Route path="commissions" element={<AdminCommissionManagement />} />
