@@ -61,3 +61,47 @@ export const getTopAgents = () =>
 /** Export analytics data */
 export const exportAnalytics = () =>
   axiosInstance.get('/admin/analytics/export', { responseType: 'blob' })
+
+// ─── AGENT MANAGEMENT ENDPOINTS ────────────────────────────
+
+/** Fetch all agents (all statuses) */
+export const getAllAgents = (params) =>
+  axiosInstance.get('/admin/agents', { params })
+
+/** Get agent by ID */
+export const getAgentById = (id) =>
+  axiosInstance.get(`/admin/agents/${id}`)
+
+/** Suspend an agent by ID */
+export const suspendAgent = (id) =>
+  axiosInstance.put(`/admin/agents/${id}/suspend`)
+
+/** Reactivate a suspended agent */
+export const reactivateAgent = (id) =>
+  axiosInstance.put(`/admin/agents/${id}/reactivate`)
+
+/** Delete an agent */
+export const deleteAgent = (id) =>
+  axiosInstance.delete(`/admin/agents/${id}`)
+
+// ─── USER MANAGEMENT ENDPOINTS ──────────────────────────────
+
+/** Fetch all users */
+export const getAllUsers = (params) =>
+  axiosInstance.get('/admin/users', { params })
+
+/** Get user by ID */
+export const getUserById = (id) =>
+  axiosInstance.get(`/admin/users/${id}`)
+
+/** Suspend a user by ID */
+export const suspendUser = (id) =>
+  axiosInstance.put(`/admin/users/${id}/suspend`)
+
+/** Reactivate a suspended user */
+export const reactivateUser = (id) =>
+  axiosInstance.put(`/admin/users/${id}/reactivate`)
+
+/** Delete a user */
+export const deleteUser = (id) =>
+  axiosInstance.delete(`/admin/users/${id}`)
