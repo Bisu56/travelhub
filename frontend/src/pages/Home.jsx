@@ -86,35 +86,72 @@ function Home() {
             </div>
             
             <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-4 gap-2 p-2">
-              <div className="relative flex items-center">
-                <span className="absolute left-3 text-gray-400"><FiMapPin /></span>
-                <input 
-                  className="w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-600 focus:border-transparent text-sm text-gray-900 placeholder:text-gray-400" 
-                  placeholder="From where?" 
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <div className="relative flex items-center">
-                <span className="absolute left-3 text-gray-400"><FiSend /></span>
-                <input 
-                  className="w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-600 focus:border-transparent text-sm text-gray-900 placeholder:text-gray-400" 
-                  placeholder="To where?" 
-                  type="text"
-                />
-              </div>
-              <div className="relative flex items-center">
-                <span className="absolute left-3 text-gray-400"><FiCalendar /></span>
-                <input 
-                  className="w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-600 focus:border-transparent text-sm text-gray-900 placeholder:text-gray-400" 
-                  placeholder="Travel dates" 
-                  type="text"
-                />
-              </div>
-              <button type="submit" className="bg-cyan-600 text-white font-bold rounded-lg py-4 hover:bg-cyan-700 transition-all flex items-center justify-center gap-2">
-                <FiSearch /> Search
-              </button>
+              {/* Flights Fields */}
+              {searchType === 'flights' && (
+                <>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-3 text-gray-400"><FiMapPin /></span>
+                    <input className="w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-600 focus:border-transparent text-sm text-gray-900 placeholder:text-gray-400" placeholder="From (City/Airport)" type="text" />
+                  </div>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-3 text-gray-400"><FiSend /></span>
+                    <input className="w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-600 focus:border-transparent text-sm text-gray-900 placeholder:text-gray-400" placeholder="To (City/Airport)" type="text" />
+                  </div>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-3 text-gray-400"><FiCalendar /></span>
+                    <input className="w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-600 focus:border-transparent text-sm text-gray-900 placeholder:text-gray-400" placeholder="Departure Date" type="date" />
+                  </div>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-3 text-gray-400"><FiUsers /></span>
+                    <input className="w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-600 focus:border-transparent text-sm text-gray-900 placeholder:text-gray-400" placeholder="Passengers" type="number" min="1" defaultValue="1" />
+                  </div>
+                </>
+              )}
+
+              {/* Vehicles Fields */}
+              {searchType === 'vehicles' && (
+                <>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-3 text-gray-400"><FiMapPin /></span>
+                    <input className="w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-600 focus:border-transparent text-sm text-gray-900 placeholder:text-gray-400" placeholder="Pickup Location" type="text" />
+                  </div>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-3 text-gray-400"><FiMapPin /></span>
+                    <input className="w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-600 focus:border-transparent text-sm text-gray-900 placeholder:text-gray-400" placeholder="Drop-off Location" type="text" />
+                  </div>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-3 text-gray-400"><FiCalendar /></span>
+                    <input className="w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-600 focus:border-transparent text-sm text-gray-900 placeholder:text-gray-400" placeholder="Pickup Date" type="date" />
+                  </div>
+                  <button type="submit" className="bg-cyan-600 text-white font-bold rounded-lg py-4 hover:bg-cyan-700 transition-all flex items-center justify-center gap-2">
+                    <FiSearch /> Search
+                  </button>
+                </>
+              )}
+
+              {/* Destinations Fields */}
+              {searchType === 'destinations' && (
+                <>
+                  <div className="relative flex items-center md:col-span-3">
+                    <span className="absolute left-3 text-gray-400"><FiSearch /></span>
+                    <input className="w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-600 focus:border-transparent text-sm text-gray-900 placeholder:text-gray-400" placeholder="Search destinations..." type="text" />
+                  </div>
+                </>
+              )}
+              
+              {/* Show search button for flights and vehicles */}
+              {(searchType === 'flights' || searchType === 'vehicles') && (
+                <button type="submit" className="bg-cyan-600 text-white font-bold rounded-lg py-4 hover:bg-cyan-700 transition-all flex items-center justify-center gap-2">
+                  <FiSearch /> Search
+                </button>
+              )}
+              
+              {/* Show search button for destinations */}
+              {searchType === 'destinations' && (
+                <button type="submit" className="bg-cyan-600 text-white font-bold rounded-lg py-4 hover:bg-cyan-700 transition-all flex items-center justify-center gap-2">
+                  <FiSearch /> Search
+                </button>
+              )}
             </form>
           </div>
         </div>
