@@ -31,8 +31,8 @@ function Home() {
     e.preventDefault()
     if (searchType === 'flights') {
       navigate('/flights')
-    } else if (searchType === 'hotels') {
-      navigate('/hotels')
+    } else if (searchType === 'vehicles') {
+      navigate('/vehicles')
     } else {
       navigate('/destinations')
     }
@@ -69,10 +69,10 @@ function Home() {
                 <FiSend size={18} /> Flights
               </button>
               <button 
-                onClick={() => setSearchType('hotels')}
-                className={`px-6 py-4 border-b-2 font-bold text-sm flex items-center gap-2 transition-all ${searchType === 'hotels' ? 'border-cyan-600 text-cyan-600' : 'border-transparent text-gray-500 hover:text-cyan-600'}`}
+                onClick={() => setSearchType('vehicles')}
+                className={`px-6 py-4 border-b-2 font-bold text-sm flex items-center gap-2 transition-all ${searchType === 'vehicles' ? 'border-cyan-600 text-cyan-600' : 'border-transparent text-gray-500 hover:text-cyan-600'}`}
               >
-                <FiHome size={18} /> Hotels
+                <FiTruck size={18} /> Vehicle Rental
               </button>
               <button 
                 onClick={() => setSearchType('destinations')}
