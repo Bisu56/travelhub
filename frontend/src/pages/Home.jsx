@@ -138,20 +138,6 @@ function Home() {
                   </div>
                 </>
               )}
-              
-              {/* Show search button for flights and vehicles */}
-              {(searchType === 'flights' || searchType === 'vehicles') && (
-                <button type="submit" className="bg-cyan-600 text-white font-bold rounded-lg py-4 hover:bg-cyan-700 transition-all flex items-center justify-center gap-2">
-                  <FiSearch /> Search
-                </button>
-              )}
-              
-              {/* Show search button for destinations */}
-              {searchType === 'destinations' && (
-                <button type="submit" className="bg-cyan-600 text-white font-bold rounded-lg py-4 hover:bg-cyan-700 transition-all flex items-center justify-center gap-2">
-                  <FiSearch /> Search
-                </button>
-              )}
             </form>
           </div>
         </div>
