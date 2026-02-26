@@ -60,26 +60,29 @@ function Home() {
           </p>
 
           {/* Search Widget */}
-          <div className="bg-white p-2 rounded-xl shadow-2xl overflow-hidden">
-            <div className="flex border-b border-slate-100 mb-4 px-4">
-              <button 
-                onClick={() => setSearchType('flights')}
-                className={`px-6 py-4 border-b-2 font-bold text-sm flex items-center gap-2 transition-all ${searchType === 'flights' ? 'border-cyan-600 text-cyan-600' : 'border-transparent text-gray-500 hover:text-cyan-600'}`}
-              >
-                <FiSend size={18} /> Flights
-              </button>
-              <button 
-                onClick={() => setSearchType('vehicles')}
-                className={`px-6 py-4 border-b-2 font-bold text-sm flex items-center gap-2 transition-all ${searchType === 'vehicles' ? 'border-cyan-600 text-cyan-600' : 'border-transparent text-gray-500 hover:text-cyan-600'}`}
-              >
-                <FiTruck size={18} /> Vehicle Rental
-              </button>
-              <button 
-                onClick={() => setSearchType('destinations')}
-                className={`px-6 py-4 border-b-2 font-bold text-sm flex items-center gap-2 transition-all ${searchType === 'destinations' ? 'border-cyan-600 text-cyan-600' : 'border-transparent text-gray-500 hover:text-cyan-600'}`}
-              >
-                <FiBox size={18} /> Destinations
-              </button>
+          <div className="bg-white p-4 rounded-xl shadow-2xl overflow-hidden">
+            {/* Toggle Switch */}
+            <div className="flex justify-center mb-4">
+              <div className="inline-flex bg-gray-100 p-1 rounded-xl">
+                <button 
+                  onClick={() => setSearchType('flights')}
+                  className={`px-6 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-all duration-300 ${searchType === 'flights' ? 'bg-white text-cyan-600 shadow-md' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  <FiSend size={16} /> Flights
+                </button>
+                <button 
+                  onClick={() => setSearchType('vehicles')}
+                  className={`px-6 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-all duration-300 ${searchType === 'vehicles' ? 'bg-white text-cyan-600 shadow-md' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  <FiTruck size={16} /> Vehicles
+                </button>
+                <button 
+                  onClick={() => setSearchType('destinations')}
+                  className={`px-6 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-all duration-300 ${searchType === 'destinations' ? 'bg-white text-cyan-600 shadow-md' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  <FiBox size={16} /> Destinations
+                </button>
+              </div>
             </div>
             
             <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-4 gap-2 p-2">
