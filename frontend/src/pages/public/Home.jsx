@@ -84,7 +84,7 @@ const Home = () => {
             transition={{ delay: 0.1 }}
             className="text-white/90 text-lg md:text-xl mb-10 max-w-2xl mx-auto font-medium"
           >
-            Book flights, hotels, and holiday packages all in one place. Your journey starts here.
+            Book flights, hotels, and destinations all in one place. Your journey starts here.
           </motion.p>
 
           {/* Search Widget */}
