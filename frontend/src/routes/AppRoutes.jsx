@@ -67,8 +67,8 @@ function AppRoutes() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/packages" element={<Packages />} />
-            <Route path="/packages/:id" element={<PackageDetail />} />
+            <Route path="/destinations" element={<Packages />} />
+            <Route path="/destinations/:id" element={<PackageDetail />} />
             <Route path="/flights" element={<FlightSearchPage />} />
             <Route path="/flights/book/:id" element={<FlightBookingPage />} />
             <Route path="/hotels" element={<HotelSearchPage />} />
@@ -103,9 +103,9 @@ function AppRoutes() {
           {/* ── AGENT ROUTES ── */}
           <Route path="/agent" element={<AgentLayout />}>
             <Route path="dashboard" element={<AgentDashboard />} />
-            <Route path="packages" element={<AgentPackages />} />
-            <Route path="packages/create" element={<CreatePackage />} />
-            <Route path="packages/edit/:id" element={<EditPackage />} />
+            <Route path="destinations" element={<AgentPackages />} />
+            <Route path="destinations/create" element={<CreatePackage />} />
+            <Route path="destinations/edit/:id" element={<EditPackage />} />
             <Route path="earnings" element={<AgentEarningsDashboard />} />
           </Route>
 

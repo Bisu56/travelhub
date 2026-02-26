@@ -7,7 +7,7 @@ import NotificationBell from '../../features/notifications/components/Notificati
 const navLinks = [
   { to: '/flights', label: 'Flights', icon: <FiSend size={18} /> },
   { to: '/hotels', label: 'Hotels', icon: <FiHome size={18} /> },
-  { to: '/packages', label: 'Packages', icon: <FiBox size={18} /> },
+  { to: '/destinations', label: 'Destinations', icon: <FiBox size={18} /> },
   { to: '/vehicles', label: 'Vehicle Rental', icon: <FiTruck size={18} /> },
 ]
 

@@ -37,7 +37,7 @@ function Footer() {
             <ul className="space-y-3">
               <li><Link to="/flights" className="text-cyan-200 hover:text-lime-400 transition-colors flex items-center gap-2 text-sm"><FiSend size={16} /> Flights</Link></li>
               <li><Link to="/hotels" className="text-cyan-200 hover:text-lime-400 transition-colors flex items-center gap-2 text-sm"><FiHome size={16} /> Hotels</Link></li>
-              <li><Link to="/packages" className="text-cyan-200 hover:text-lime-400 transition-colors flex items-center gap-2 text-sm"><FiBox size={16} /> Travel Packages</Link></li>
+              <li><Link to="/destinations" className="text-cyan-200 hover:text-lime-400 transition-colors flex items-center gap-2 text-sm"><FiBox size={16} /> Destinations</Link></li>
               <li><Link to="/vehicles" className="text-cyan-200 hover:text-lime-400 transition-colors flex items-center gap-2 text-sm"><FiTruck size={16} /> Vehicle Rentals</Link></li>
             </ul>
           </div>
