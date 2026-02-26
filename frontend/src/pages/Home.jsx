@@ -34,7 +34,7 @@ function Home() {
     } else if (searchType === 'hotels') {
       navigate('/hotels')
     } else {
-      navigate('/packages')
+      navigate('/destinations')
     }
   }
 
@@ -75,10 +75,10 @@ function Home() {
                 <FiHome size={18} /> Hotels
               </button>
               <button 
-                onClick={() => setSearchType('packages')}
-                className={`px-6 py-4 border-b-2 font-bold text-sm flex items-center gap-2 transition-all ${searchType === 'packages' ? 'border-cyan-600 text-cyan-600' : 'border-transparent text-gray-500 hover:text-cyan-600'}`}
+                onClick={() => setSearchType('destinations')}
+                className={`px-6 py-4 border-b-2 font-bold text-sm flex items-center gap-2 transition-all ${searchType === 'destinations' ? 'border-cyan-600 text-cyan-600' : 'border-transparent text-gray-500 hover:text-cyan-600'}`}
               >
-                <FiBox size={18} /> Packages
+                <FiBox size={18} /> Destinations
               </button>
             </div>
             
@@ -124,7 +124,7 @@ function Home() {
             <h3 className="text-3xl font-black text-gray-900 mb-2">Popular Destinations</h3>
             <p className="text-gray-500">Curated travel spots across Nepal and the UAE</p>
           </div>
-          <Link className="text-cyan-600 font-bold flex items-center gap-1 hover:underline" to="/packages">
+            <Link className="text-cyan-600 font-bold flex items-center gap-1 hover:underline" to="/destinations">
             View all <FiArrowRight />
           </Link>
         </div>
@@ -177,7 +177,7 @@ function Home() {
         <div className="bg-cyan-600 rounded-3xl p-8 md:p-16 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-10">
           <div className="relative z-10 text-center md:text-left">
             <h3 className="text-white text-3xl font-black mb-4">Ready to Start Your Journey?</h3>
-            <p className="text-white/80 max-w-md">Subscribe to get exclusive flight alerts and hidden package deals between Nepal and Dubai.</p>
+            <p className="text-white/80 max-w-md">Subscribe to get exclusive flight alerts and hidden destination deals between Nepal and Dubai.</p>
           </div>
           <div className="relative z-10 w-full max-w-md">
             <form className="flex flex-col sm:flex-row gap-3" onSubmit={(e) => e.preventDefault()}>
