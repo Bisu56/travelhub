@@ -105,6 +105,9 @@ function Home() {
                     <span className="absolute left-3 text-gray-400"><FiUsers /></span>
                     <input className="w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-600 focus:border-transparent text-sm text-gray-900 placeholder:text-gray-400" placeholder="Passengers" type="number" min="1" defaultValue="1" />
                   </div>
+                  <button type="submit" className="bg-cyan-600 text-white font-bold rounded-lg py-4 hover:bg-cyan-700 transition-all flex items-center justify-center gap-2 md:col-span-4">
+                    <FiSearch /> Search Flights
+                  </button>
                 </>
               )}
 
@@ -136,6 +139,9 @@ function Home() {
                     <span className="absolute left-3 text-gray-400"><FiSearch /></span>
                     <input className="w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-600 focus:border-transparent text-sm text-gray-900 placeholder:text-gray-400" placeholder="Search destinations..." type="text" />
                   </div>
+                  <button type="submit" className="bg-cyan-600 text-white font-bold rounded-lg py-4 hover:bg-cyan-700 transition-all flex items-center justify-center gap-2">
+                    <FiSearch /> Search
+                  </button>
                 </>
               )}
             </form>
