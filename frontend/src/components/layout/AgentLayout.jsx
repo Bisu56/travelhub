@@ -6,17 +6,17 @@ import {
 
 const navItems = [
   { path: '/agent/dashboard', icon: <FiGrid size={20} />, label: 'Dashboard' },
-  { path: '/agent/packages', icon: <FiPackage size={20} />, label: 'My Packages' },
-  { path: '/agent/packages/create', icon: <FiPlusCircle size={20} />, label: 'Create Package' },
+  { path: '/agent/destinations', icon: <FiPackage size={20} />, label: 'My Destinations' },
+  { path: '/agent/destinations/create', icon: <FiPlusCircle size={20} />, label: 'Create Destination' },
   { path: '/agent/earnings', icon: <FiDollarSign size={20} />, label: 'Earnings' },
 ]
 
 const pageTitles = {
   '/agent': 'Dashboard',
   '/agent/dashboard': 'Dashboard',
-  '/agent/packages': 'My Packages',
-  '/agent/packages/create': 'Create Package',
-  '/agent/packages/edit': 'Edit Package',
+  '/agent/destinations': 'My Destinations',
+  '/agent/destinations/create': 'Create Destination',
+  '/agent/destinations/edit': 'Edit Destination',
   '/agent/earnings': 'Earnings',
 }
 
@@ -60,7 +60,7 @@ const AgentLayout = () => {
           </div>
           <div className="space-y-1">
             {navItems.map(item => (
-              <NavLink key={item.path} to={item.path} className={linkClass} end={item.path === '/agent/packages'}>
+              <NavLink key={item.path} to={item.path} className={linkClass} end={item.path === '/agent/destinations'}>
                 {item.icon}
                 <span>{item.label}</span>
                 <FiChevronRight className="ml-auto opacity-0 group-hover:opacity-100" />
