@@ -9,6 +9,7 @@ import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Packages from '../pages/Packages';
 import PackageDetail from '../pages/public/PackageDetail';
+import AboutUs from '../pages/public/AboutUs';
 import FlightSearchPage from '../pages/flights/FlightSearchPage';
 import FlightBookingPage from '../pages/flights/FlightBookingPage';
 import HotelSearchPage from '../pages/hotels/HotelSearchPage';
@@ -68,6 +69,7 @@ function AppRoutes() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/destinations" element={<Packages />} />
+            <Route path="/about" element={<AboutUs />} />
             <Route path="/destinations/:id" element={<PackageDetail />} />
             <Route path="/flights" element={<FlightSearchPage />} />
             <Route path="/flights/book/:id" element={<FlightBookingPage />} />
