@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FiMapPin, FiMail, FiPhone, FiClock, FiSend, FiUser, FiMessage, FiSubject } from 'react-icons/fi';
+import { FiMapPin, FiMail, FiPhone, FiClock, FiSend, FiUser, FiMessage, FiList } from 'react-icons/fi';
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -144,7 +144,7 @@ const ContactPage = () => {
                 <div>
                   <label className="block text-gray-700 font-medium mb-2">Subject</label>
                   <div className="relative">
-                    <FiSubject className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <FiList className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <select
                       name="subject"
                       value={formData.subject}
