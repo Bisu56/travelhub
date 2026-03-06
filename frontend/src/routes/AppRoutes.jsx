@@ -11,6 +11,7 @@ import Packages from '../pages/Packages';
 import PackageDetail from '../pages/public/PackageDetail';
 import AboutUs from '../pages/public/AboutUs';
 import CareerPage from '../pages/public/CareerPage';
+import ContactPage from '../pages/public/ContactPage';
 import FlightSearchPage from '../pages/flights/FlightSearchPage';
 import FlightBookingPage from '../pages/flights/FlightBookingPage';
 import HotelSearchPage from '../pages/hotels/HotelSearchPage';
@@ -72,6 +73,7 @@ function AppRoutes() {
             <Route path="/destinations" element={<Packages />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/careers" element={<CareerPage />} />
+            <Route path="/contact" element={<ContactPage />} />
             <Route path="/destinations/:id" element={<PackageDetail />} />
             <Route path="/flights" element={<FlightSearchPage />} />
             <Route path="/flights/book/:id" element={<FlightBookingPage />} />
