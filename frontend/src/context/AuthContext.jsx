@@ -29,24 +29,29 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
       
       if (response.ok) {
-        localStorage.setItem('token', data.token || data.accessToken);
-        const userData = { email, role: data.role || 'USER' };
+        localStorage.setItem('token', data.accessToken);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        
+        const profileResponse = await fetch('http://localhost:8080/api/auth/profile', {
+          headers: { 'Authorization': `Bearer ${data.accessToken}` }
+        });
+        const profileData = await profileResponse.json();
+        
+        const userData = { 
+          email: profileData.email, 
+          role: profileData.role,
+          id: profileData.id,
+          name: profileData.name,
+          phone: profileData.phone
+        };
         localStorage.setItem('user', JSON.stringify(userData));
         setUser(userData);
-        return { success: true, role: data.role };
+        return { success: true, role: profileData.role };
       } else {
         return { success: false, message: data.message || 'Invalid credentials' };
       }
     } catch (error) {
       console.error('Login error:', error);
-      if (email === 'admin@travelhub.com' && password === 'admin123') {
-        const dummyToken = 'dummy-jwt-token';
-        localStorage.setItem('token', dummyToken);
-        const userData = { email, role: 'ADMIN' };
-        localStorage.setItem('user', JSON.stringify(userData));
-        setUser(userData);
-        return { success: true, role: 'ADMIN' };
-      }
       return { success: false, message: 'An error occurred' };
     } finally {
       setLoading(false);
@@ -59,19 +64,19 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  const register = async (username, email, password) => {
+  const register = async (email, password) => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/auth/register', {
+      const response = await fetch('http://localhost:8080/api/auth/register/user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ email, password }),
       });
       
       const data = await response.json();
       
-      if (response.ok) {
-        return { success: true };
+      if (response.ok || response.status === 200) {
+        return { success: true, message: data };
       } else {
         return { success: false, message: data.message || 'Registration failed' };
       }
