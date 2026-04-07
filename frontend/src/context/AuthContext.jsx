@@ -41,7 +41,8 @@ export const AuthProvider = ({ children }) => {
           email: profileData.email, 
           role: profileData.role,
           id: profileData.id,
-          name: profileData.name,
+          firstName: profileData.firstName,
+          lastName: profileData.lastName,
           phone: profileData.phone
         };
         localStorage.setItem('user', JSON.stringify(userData));
@@ -60,6 +61,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
     setUser(null);
   };

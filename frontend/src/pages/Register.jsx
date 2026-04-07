@@ -2,10 +2,9 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
-import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight } from 'react-icons/fi'
+import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight } from 'react-icons/fi'
 
 function Register() {
-  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -16,7 +15,7 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!username || !email || !password || !confirmPassword) {
+    if (!email || !password || !confirmPassword) {
       toast.error('Please fill in all fields')
       return
     }
@@ -24,15 +23,15 @@ function Register() {
       toast.error('Passwords do not match')
       return
     }
-    if (password.length < 6) {
-      toast.error('Password must be at least 6 characters')
+    if (password.length < 8) {
+      toast.error('Password must be at least 8 characters')
       return
     }
     setLoading(true)
     try {
-      const result = await register(username, email, password)
+      const result = await register(email, password)
       if (result.success) {
-        toast.success('Account created successfully!')
+        toast.success('Account created! Please check your email to verify.')
         navigate('/login')
       } else {
         toast.error(result.message || 'Registration failed')
@@ -93,25 +92,6 @@ function Register() {
 
           <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl border border-cyan-100 p-8">
             <div className="mb-5">
-              <label className="block text-sm font-semibold text-cyan-700 mb-2" htmlFor="username">
-                Full Name
-              </label>
-              <div className="relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400">
-                  <FiUser size={20} />
-                </div>
-                <input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="John Doe"
-                  className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-cyan-50 text-cyan-900 placeholder-cyan-400 border-2 border-cyan-100 focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100 transition-all outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="mb-5">
               <label className="block text-sm font-semibold text-cyan-700 mb-2" htmlFor="email">
                 Email Address
               </label>
@@ -143,7 +123,7 @@ function Register() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Min. 6 characters"
+                  placeholder="Min. 8 characters"
                   className="w-full pl-12 pr-14 py-3.5 rounded-xl bg-cyan-50 text-cyan-900 placeholder-cyan-400 border-2 border-cyan-100 focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100 transition-all outline-none"
                 />
                 <button
