@@ -17,10 +17,12 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081/api';
+
   const login = async (email, password) => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/auth/login', {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -32,7 +34,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', data.accessToken);
         localStorage.setItem('refreshToken', data.refreshToken);
         
-        const profileResponse = await fetch('http://localhost:8080/api/auth/profile', {
+        const profileResponse = await fetch(`${API_URL}/auth/profile`, {
           headers: { 'Authorization': `Bearer ${data.accessToken}` }
         });
         const profileData = await profileResponse.json();
@@ -69,7 +71,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (email, password) => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/auth/register/user', {
+      const response = await fetch(`${API_URL}/auth/register/user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),

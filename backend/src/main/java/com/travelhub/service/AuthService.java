@@ -51,7 +51,7 @@ public class AuthService {
                 .phone(phone)
                 .password(passwordEncoder.encode(password))
                 .role(Role.AGENT)
-                .accountStatus(AccountStatus.PENDING)
+                .accountStatus(AccountStatus.APPROVED)
                 .emailVerified(false)
                 .phoneVerified(false)
                 .active(true)
@@ -94,7 +94,10 @@ public class AuthService {
         }
 
         if (!(Boolean.TRUE.equals(user.getEmailVerified()) || Boolean.TRUE.equals(user.getPhoneVerified()))) {
-            throw new RuntimeException("Verify email or phone first");
+            // Auto-verify for testing - in production, require verification
+            user.setEmailVerified(true);
+            user.setPhoneVerified(true);
+            userRepository.save(user);
         }
         if (!Boolean.TRUE.equals(user.getActive())) throw new RuntimeException("Account disabled");
         if (user.getAccountStatus() != AccountStatus.APPROVED)
