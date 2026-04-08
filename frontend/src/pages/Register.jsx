@@ -2,36 +2,44 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
-import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight } from 'react-icons/fi'
+import { FiMail, FiPhone, FiLock, FiUser, FiEye, FiEyeOff, FiArrowRight } from 'react-icons/fi'
 
 function Register() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
+  const [formData, setFormData] = useState({
+    email: '',
+    phone: '',
+    fullName: '',
+    password: '',
+    confirmPassword: ''
+  })
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const { register } = useAuth()
   const navigate = useNavigate()
 
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!email || !password || !confirmPassword) {
+    if (!formData.email || !formData.phone || !formData.fullName || !formData.password) {
       toast.error('Please fill in all fields')
       return
     }
-    if (password !== confirmPassword) {
+    if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match')
       return
     }
-    if (password.length < 8) {
-      toast.error('Password must be at least 8 characters')
+    if (formData.password.length < 6) {
+      toast.error('Password must be at least 6 characters')
       return
     }
     setLoading(true)
     try {
-      const result = await register(email, password)
+      const result = await register(formData.email, formData.phone, formData.password)
       if (result.success) {
-        toast.success('Account created! Please check your email to verify.')
+        toast.success('Account created! Please verify your email/phone.')
         navigate('/login')
       } else {
         toast.error(result.message || 'Registration failed')
@@ -92,6 +100,26 @@ function Register() {
 
           <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl border border-cyan-100 p-8">
             <div className="mb-5">
+              <label className="block text-sm font-semibold text-cyan-700 mb-2" htmlFor="fullName">
+                Full Name
+              </label>
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400">
+                  <FiUser size={20} />
+                </div>
+                <input
+                  id="fullName"
+                  type="text"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  placeholder="John Doe"
+                  className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-cyan-50 text-cyan-900 placeholder-cyan-400 border-2 border-cyan-100 focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100 transition-all outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="mb-5">
               <label className="block text-sm font-semibold text-cyan-700 mb-2" htmlFor="email">
                 Email Address
               </label>
@@ -102,9 +130,30 @@ function Register() {
                 <input
                   id="email"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
                   placeholder="you@example.com"
+                  className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-cyan-50 text-cyan-900 placeholder-cyan-400 border-2 border-cyan-100 focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100 transition-all outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="mb-5">
+              <label className="block text-sm font-semibold text-cyan-700 mb-2" htmlFor="phone">
+                Phone Number
+              </label>
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400">
+                  <FiPhone size={20} />
+                </div>
+                <input
+                  id="phone"
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="9800000000"
                   className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-cyan-50 text-cyan-900 placeholder-cyan-400 border-2 border-cyan-100 focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100 transition-all outline-none"
                 />
               </div>
@@ -121,9 +170,10 @@ function Register() {
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Min. 8 characters"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Min. 6 characters"
                   className="w-full pl-12 pr-14 py-3.5 rounded-xl bg-cyan-50 text-cyan-900 placeholder-cyan-400 border-2 border-cyan-100 focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100 transition-all outline-none"
                 />
                 <button
@@ -137,7 +187,7 @@ function Register() {
             </div>
 
             <div className="mb-6">
-              <label className="block text-sm font-semibold text-cyan-700 mb-2" htmlFor="confirm-password">
+              <label className="block text-sm font-semibold text-cyan-700 mb-2" htmlFor="confirmPassword">
                 Confirm Password
               </label>
               <div className="relative">
@@ -145,10 +195,11 @@ function Register() {
                   <FiLock size={20} />
                 </div>
                 <input
-                  id="confirm-password"
+                  id="confirmPassword"
                   type={showPassword ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
                   placeholder="Confirm your password"
                   className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-cyan-50 text-cyan-900 placeholder-cyan-400 border-2 border-cyan-100 focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100 transition-all outline-none"
                 />

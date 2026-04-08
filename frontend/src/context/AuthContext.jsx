@@ -19,37 +19,31 @@ export const AuthProvider = ({ children }) => {
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081/api';
 
-  const login = async (email, password) => {
+  const login = async (emailOrPhone, password) => {
     setLoading(true);
+    console.log('Login attempt:', { emailOrPhone, API_URL });
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ emailOrPhone, password }),
       });
       
       const data = await response.json();
+      console.log('Login response:', { status: response.status, data });
       
       if (response.ok) {
         localStorage.setItem('token', data.accessToken);
         localStorage.setItem('refreshToken', data.refreshToken);
         
-        const profileResponse = await fetch(`${API_URL}/auth/profile`, {
-          headers: { 'Authorization': `Bearer ${data.accessToken}` }
-        });
-        const profileData = await profileResponse.json();
-        
         const userData = { 
-          email: profileData.email, 
-          role: profileData.role,
-          id: profileData.id,
-          firstName: profileData.firstName,
-          lastName: profileData.lastName,
-          phone: profileData.phone
+          email: emailOrPhone.includes('@') ? emailOrPhone : null, 
+          phone: emailOrPhone.includes('@') ? null : emailOrPhone,
+          role: 'USER'
         };
         localStorage.setItem('user', JSON.stringify(userData));
         setUser(userData);
-        return { success: true, role: profileData.role };
+        return { success: true, role: 'USER' };
       } else {
         return { success: false, message: data.message || 'Invalid credentials' };
       }
@@ -68,13 +62,13 @@ const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081/api'
     setUser(null);
   };
 
-  const register = async (email, password) => {
+  const register = async (email, phone, password) => {
     setLoading(true);
     try {
       const response = await fetch(`${API_URL}/auth/register/user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, phone, password }),
       });
       
       const data = await response.json();

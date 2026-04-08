@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
-import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight } from 'react-icons/fi'
+import { FiMail, FiPhone, FiLock, FiEye, FiEyeOff, FiArrowRight } from 'react-icons/fi'
 import { loginSchema } from '../utils/validationSchemas'
 
 function Login() {
@@ -20,7 +20,7 @@ function Login() {
   const onSubmit = async (data) => {
     setLoading(true)
     try {
-      const result = await login(data.email, data.password)
+      const result = await login(data.emailOrPhone, data.password)
       if (result.success) {
         toast.success('Welcome back!')
         navigate('/')
@@ -83,22 +83,22 @@ function Login() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-2xl shadow-xl border border-cyan-100 p-8">
             <div className="mb-6">
-              <label className="block text-sm font-semibold text-cyan-700 mb-2" htmlFor="email">
-                Email Address
+              <label className="block text-sm font-semibold text-cyan-700 mb-2" htmlFor="emailOrPhone">
+                Email or Phone
               </label>
               <div className="relative">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400">
                   <FiMail size={20} />
                 </div>
                 <input
-                  id="email"
-                  type="email"
-                  {...register('email')}
-                  placeholder="you@example.com"
+                  id="emailOrPhone"
+                  type="text"
+                  {...register('emailOrPhone')}
+                  placeholder="you@example.com or 9800000000"
                   className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-cyan-50 text-cyan-900 placeholder-cyan-400 border-2 border-cyan-100 focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100 transition-all outline-none"
                 />
               </div>
-              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+              {errors.emailOrPhone && <p className="text-red-500 text-sm mt-1">{errors.emailOrPhone.message}</p>}
             </div>
 
             <div className="mb-6">
